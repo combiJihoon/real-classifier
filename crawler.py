@@ -1,4 +1,5 @@
 import time
+import requests
 
 from bs4 import BeautifulSoup
 
@@ -12,7 +13,7 @@ driver = webdriver.Chrome(r"/Users/jihun/Mywork/RealClassifier/chromedriver")
 url = 'https://map.kakao.com/'
 driver.get(url)
 
-actionChains = ActionChains(driver)
+action = ActionChains(driver)
 
 # kakaomap review 찾기
 driver.find_element_by_css_selector(
@@ -23,14 +24,27 @@ time.sleep(2)
 
 # double click
 review = driver.find_element_by_css_selector(
-    '#info\.search\.place\.list > li.PlaceItem.clickArea.PlaceItem-ACTIVE > div.rating.clickArea > a').action()
-actionChains.double_click(review).perform()
+    '#info\.search\.place\.list > li.PlaceItem.clickArea.PlaceItem-ACTIVE > div.rating.clickArea > a')
+action.double_click(review).perform()
 
-# ratings = []
+
+driver.switch_to.window(driver.window_handles[-1])
+# review_url = driver.current_url
+# review_url = "'"+review_url+"'"
+# response = requests.get(review_url)
+
+# soup = BeautifulSoup(response.text, 'html.parser')
 html = driver.page_source
-soup = BeautifulSoup(html, 'html.parser')
 
-kakao_rating = soup.select(
-    '.grade_star').text
-
-print(kakao_rating)
+soup = BeautifulSoup(html.content, 'lxml')
+# rating = soup.select(
+#     '#mArticle > div.cont_evaluation > div.ahead_info > div > em')
+rating = soup.select('#mArticle > div.cont_evaluation > div.ahead_info > div')
+#mArticle > div.cont_evaluation
+print(rating)
+# rating_list = []
+# if len(kakao_rating_list) != 0:
+#     for rating in kakao_rating_list:
+#         rating_list.append(rating)
+# else:
+#     print('왜 안됩니까요?')
