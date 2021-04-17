@@ -14,10 +14,10 @@ url = 'https://map.kakao.com/'
 driver.get(url)
 
 action = ActionChains(driver)
-
+queryInput = input('검색해 보아라 : ')
 # kakaomap review 찾기
 driver.find_element_by_css_selector(
-    '.query.tf_keyword').send_keys('용인시 '+'마약생고기')
+    '.query.tf_keyword').send_keys(queryInput)
 driver.find_element_by_css_selector('.query.tf_keyword').send_keys(Keys.ENTER)
 time.sleep(2)
 
@@ -26,6 +26,8 @@ time.sleep(2)
 review = driver.find_element_by_css_selector(
     '#info\.search\.place\.list > li.PlaceItem.clickArea.PlaceItem-ACTIVE > div.rating.clickArea > a')
 action.double_click(review).perform()
+
+# info\.search\.place\.list > li:nth-child(1) > div.rating.clickArea > a
 
 
 driver.switch_to.window(driver.window_handles[-1])
