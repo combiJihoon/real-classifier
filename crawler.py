@@ -29,22 +29,9 @@ action.double_click(review).perform()
 
 
 driver.switch_to.window(driver.window_handles[-1])
-# review_url = driver.current_url
-# review_url = "'"+review_url+"'"
-# response = requests.get(review_url)
+time.sleep(2)
 
-# soup = BeautifulSoup(response.text, 'html.parser')
-html = driver.page_source
+soup = BeautifulSoup(driver.page_source, 'html.parser')
+ratings = soup.select('.grade_star')
 
-soup = BeautifulSoup(html.content, 'lxml')
-# rating = soup.select(
-#     '#mArticle > div.cont_evaluation > div.ahead_info > div > em')
-rating = soup.select('#mArticle > div.cont_evaluation > div.ahead_info > div')
-#mArticle > div.cont_evaluation
-print(rating)
-# rating_list = []
-# if len(kakao_rating_list) != 0:
-#     for rating in kakao_rating_list:
-#         rating_list.append(rating)
-# else:
-#     print('왜 안됩니까요?')
+print(ratings[1].text)
