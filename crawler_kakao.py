@@ -24,10 +24,8 @@ time.sleep(2)
 
 # double click
 review = driver.find_element_by_css_selector(
-    '#info\.search\.place\.list > li.PlaceItem.clickArea.PlaceItem-ACTIVE > div.rating.clickArea > a')
+    '#info\.search\.place\.list > li:nth-of-type(1) > div.rating.clickArea > a')
 action.double_click(review).perform()
-
-# info\.search\.place\.list > li:nth-child(1) > div.rating.clickArea > a
 
 
 driver.switch_to.window(driver.window_handles[-1])
