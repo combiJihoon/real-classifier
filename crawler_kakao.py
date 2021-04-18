@@ -69,7 +69,7 @@ print(ratings[1].text)
 # page 이동하며 review_info 크롤링
 while True:
     review_by_page = []
-    for i in range(1, 20):
+    for i in range(2, 20):
         # 별점, 리뷰, 날짜 출력
         all_reviews = soup.select(
             '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li')
@@ -91,12 +91,16 @@ while True:
 
         review_by_page.append(review_info)
 
-        time.sleep(2)
         # 다음 페이지 클릭
-        next_page_btn = driver.find_element_by_xpath(
-            '//*[@id = "mArticle"]/div[6]/div[4]/div/a['+str(i)+']')
+        time.sleep(2)
+
         try:
-            next_page_btn.click()
+            # driver.switch_to.(driver.find_element_by_css_selector(
+            #     '#mArticle > div.cont_evaluation > div.evaluation_review > div'))
+            driver.find_element_by_css_selector(
+                '#mArticle > div.cont_evaluation > div.evaluation_review > div')
+            driver.find_element_by_link_text(str(i)).click()
+            print('page num: '+str(i))
         except NoSuchElementException:
             break
         time.sleep(2)
@@ -108,3 +112,8 @@ while True:
 driver.quit()
 
 print(review_by_page)
+
+# mArticle > div.cont_evaluation > div.evaluation_review > div > a:nth-of-type(3)
+# mArticle > div.cont_evaluation > div.evaluation_review > div > a:nth-child(4)
+
+# //*[@id="mArticle"]/div[6]/div[4]/div/a[1]
