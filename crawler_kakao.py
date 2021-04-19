@@ -35,6 +35,7 @@ action.double_click(review).perform()
 driver.switch_to.window(driver.window_handles[-1])
 time.sleep(2)
 
+# 총 평균 별점
 soup = BeautifulSoup(driver.page_source, 'html.parser')
 ratings = soup.select('.grade_star')
 
@@ -67,13 +68,17 @@ print(ratings[1].text)
 # print(review_info)
 
 # page 이동하며 review_info 크롤링
-while True:
-    review_by_page = []
-    for i in range(2, 20):
+review_by_page = []
+
+# 다음 페이지 클릭
+
+
+for i in range(1, 6):
+    try:
         # 별점, 리뷰, 날짜 출력
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
         all_reviews = soup.select(
             '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li')
-
         # print(all_reviews)
         review_info = []
         for review in all_reviews:
@@ -91,29 +96,32 @@ while True:
 
         review_by_page.append(review_info)
 
-        # 다음 페이지 클릭
+        print('현재 페이지: '+str(i))
+        print(review_info)
+
+        element = driver.find_element_by_xpath(
+            '//*[@id = "mArticle"]/div[5]/div[4]/div/a['+str(i)+']')
+        driver.execute_script("arguments[0].click();", element)
         time.sleep(2)
 
-        try:
-            # driver.switch_to.(driver.find_element_by_css_selector(
-            #     '#mArticle > div.cont_evaluation > div.evaluation_review > div'))
-            driver.find_element_by_css_selector(
-                '#mArticle > div.cont_evaluation > div.evaluation_review > div')
-            driver.find_element_by_link_text(str(i)).click()
-            print('page num: '+str(i))
-        except NoSuchElementException:
-            break
+        # WebDriverWait(driver, 20).until(EC.element_to_be_clickable(
+        #     (By.XPATH, '//*[@id = "mArticle"]/div[5]/div[4]/div/a['+str(i)+']'))).click()
+        # driver.find_element_by_css_selector(
+        #     '#mArticle > div.cont_evaluation > div.evaluation_review > div')
+        # next_pg = driver.find_element_by_link_text(str(i)).click()
+        # action.move_to_element(next_pg).perform()
+        # action.click().perform()
         time.sleep(2)
+
+    except NoSuchElementException:
+        break
+
+driver.quit()
+# break
+# time.sleep(2)
+
 
 # print('최저 별점을 남긴 고객들의 리뷰 내용입니다: ')
 # print('최고 별점을 남긴 고객들의 리뷰 내용입니다: ')
 
-
-driver.quit()
-
 print(review_by_page)
-
-# mArticle > div.cont_evaluation > div.evaluation_review > div > a:nth-of-type(3)
-# mArticle > div.cont_evaluation > div.evaluation_review > div > a:nth-child(4)
-
-# //*[@id="mArticle"]/div[6]/div[4]/div/a[1]
