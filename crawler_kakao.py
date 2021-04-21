@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 
 from selenium.webdriver.support import expected_conditions as EC
@@ -103,17 +102,10 @@ while True:
         print('현재 페이지: '+str(pageNum))
         # print(review_info)
 
-        # # 페이지가 5의 배수인지 확인 : 5의 배수면 '다음'을 누를 것
-        # if i % 5 == 0:
-        #     # 다음 누르기
-        #     btn_next = driver.find_element_by_class_name('.btn_next')
-        #     driver.execute_script("arguments[0].click();", btn_next)
-        #     time.sleep(2)
-        # # 5의 배수가 아니라면 숫자 누를 것
-        # else:
         element = driver.find_element_by_xpath(
             '//*[@id = "mArticle"]/div[5]/div[4]/div/a['+str(i)+']')
         driver.execute_script("arguments[0].click();", element)
+        # 페이지 이동
         if i == 5 and j == 1:
             i = 2
             j += 1
@@ -155,5 +147,3 @@ print('걸린시간: ' + str(total_time) + '초')
 print('총 페이지 수 : ' + str(pageNum))
 print('------------------------------')
 print(review_by_page)
-
-print(len(review_by_page))
