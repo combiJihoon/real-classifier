@@ -37,9 +37,6 @@ ratings = soup.select(
 print(ratings[0].text[2:6])
 
 
-# page 이동하며 review_info 크롤링
-review_by_page = []
-
 # 리뷰 페이지로 이동
 # WebDriverWait(driver, 10).until(EC.element_to_be_clickable(
 #     (By.CSS_SELECTOR, '#app-root > div > div.place_detail_wrapper > div:nth-of-type(5) > div:nth-of-type(4) > div:nth-of-type(4) > div._2kAri > a'))).click()
@@ -52,22 +49,27 @@ time.sleep(1)
 # 별점, 리뷰, 날짜 출력
 soup = BeautifulSoup(driver.page_source, 'html.parser')
 
+# page 이동하며 review_info 크롤링
+review_by_page = []
+
+# print(len(reviews))
+
 pageNum = 1
 j = 0
-while True:
+while j < 3:
     try:
         review_info = []
+        reviews = soup.select('._2Cv-r')
         for i in range(j, j+10):
             temp = []
-            # print(all_reviews)
-            reviews = soup.select(
-                '#app-root > div > div.place_detail_wrapper > div:nth-of-type(5) > div:nth-of-type(4) > div:nth-of-type(4) > div:nth-of-type(2) > ul> li')
-            rating = reviews[i].select(
-                '#app-root > div > div.place_detail_wrapper > div:nth-of-type(5) > div:nth-of-type(4) > div:nth-of-type(4) > div:nth-of-type(2) > ul > li:nth-of-type(' + str(i+1) + ') > div > div._1ZcDn > div._3D_HC > span._2tObC').text
-            txt_comment = reviews[i].select(
-                '#app-root > div > div.place_detail_wrapper > div:nth-of-type(5) > div:nth-of-type(4) > div:nth-of-type(4) > div:nth-of-type(2) > ul > li:nth-of-type(' + str(i+1) + ') > div > div.PVBo8 > a > span').text
-            date = reviews[i].select(
-                '#app-root > div > div.place_detail_wrapper > div:nth-of-type(5) > div:nth-of-type(4) > div:nth-of-type(4) > div:nth-of-type(2) > ul > li:nth-of-type(' + str(i+1) + ') > div > div._1ZcDn > div.ZvQ8X > span:nth-of-type(1)').text
+
+            rating = reviews[i].select_one(
+                '._2Cv-r > div > div._1ZcDn > div._3D_HC > span._2tObC').text
+            txt_comment = reviews[i].select_one(
+                '._2Cv-r > div > div.PVBo8 > a > span').text
+            date = reviews[i].select_one(
+                '._2Cv-r > div > div._1ZcDn > div.ZvQ8X > span:nth-of-type(1)').text
+
             temp.append(rating)
             temp.append(txt_comment)
             temp.append(date)
@@ -77,14 +79,45 @@ while True:
                 print('현재 페이지: '+str(pageNum))
                 j += 10
                 pageNum += 1
+                review_by_page.append(review_info)
                 # '더보기' xpath는 항상 동일함
                 element = driver.find_element_by_xpath(
                     '//*[@id = "app-root"]/div/div[2]/div[5]/div[4]/div[4]/div[2]/a')
                 driver.execute_script("arguments[0].click();", element)
-        review_by_page.append(review_info)
 
     except NoSuchElementException:
         break
+
+
+# ------------------------------------------------------------------------
+# pageNum = 1
+# review_info = []
+# reviews = soup.select('._2Cv-r')
+# i = 0
+# # reviews = soup.select(
+# #     '#app-root > div.place_section.no_margin.GCwOh > div.place_detail_wrapper > div:nth-of-type(5) > div:nth-of-type(4) > div:nth-of-type(4) > div:nth-of-type(2) > ul > li:nth-of-type(1)')
+
+# temp = []
+# # print(all_reviews)
+# # rating = reviews[i].select_one(
+# #     '#app-root > div > div.place_detail_wrapper > div:nth-of-type(5) > div:nth-of-type(4) > div:nth-of-type(4) > div:nth-of-type(2) > ul > li:nth-of-type(' + str(i+1) + ') > div > div._1ZcDn > div._3D_HC > span._2tObC').text
+# # txt_comment = reviews[i].select_one(
+# #     '#app-root > div > div.place_detail_wrapper > div:nth-of-type(5) > div:nth-of-type(4) > div:nth-of-type(4) > div:nth-of-type(2) > ul > li:nth-of-type(' + str(i+1) + ') > div > div.PVBo8 > a > span').text
+# # date = reviews[i].select_one(
+# #     '#app-root > div > div.place_detail_wrapper > div:nth-of-type(5) > div:nth-of-type(4) > div:nth-of-type(4) > div:nth-of-type(2) > ul > li:nth-of-type(' + str(i+1) + ') > div > div._1ZcDn > div.ZvQ8X > span:nth-of-type(1)').text
+
+# rating = reviews[i].select_one(
+#     '._2Cv-r > div > div._1ZcDn > div._3D_HC > span._2tObC').text
+# txt_comment = reviews[i].select_one(
+#     '._2Cv-r > div > div.PVBo8 > a > span').text
+# date = reviews[i].select_one(
+#     '._2Cv-r > div > div._1ZcDn > div.ZvQ8X > span:nth-of-type(1)').text
+
+# temp.append(rating)
+# temp.append(txt_comment)
+# temp.append(date)
+# review_info.append(temp)
+# ------------------------------------------------------------------------
 
 end = time.time()
 
@@ -97,9 +130,11 @@ driver.quit()
 # print('최저 별점을 남긴 고객들의 리뷰 내용입니다: ')
 # print('최고 별점을 남긴 고객들의 리뷰 내용입니다: ')
 
-print('------------------------------')
-print('전체 리뷰 크롤링 결과')
-print('걸린시간: ' + str(total_time) + '초')
-print('총 페이지 수 : ' + str(pageNum))
-print('------------------------------')
-print(review_by_page)
+# print('------------------------------')
+# print('전체 리뷰 크롤링 결과')
+# print('걸린시간: ' + str(total_time) + '초')
+# print('총 페이지 수 : ' + str(pageNum))
+# print('------------------------------')
+# print(review_by_page)
+
+print(review_info)
