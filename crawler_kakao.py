@@ -27,21 +27,48 @@ driver.find_element_by_css_selector('.query.tf_keyword').send_keys(Keys.ENTER)
 time.sleep(2)
 
 
-# double click
-review = driver.find_element_by_css_selector(
-    '#info\.search\.place\.list > li:nth-of-type(1) > div.rating.clickArea > a')
+# 원하는 음식점이 맞는지 확인 : 음식점 리스트 출력 및 선택
+# html로 옮기면 사용자가 클릭하도록 바꾸어야 할 듯
+WebDriverWait(driver, 5).until(EC.element_to_be_clickable(
+    (By.CSS_SELECTOR, 'strong.tit_name > a')))
+restaurants_to_be_list = driver.find_elements_by_css_selector(
+    'strong.tit_name > a.link_name')
+restaurant_list = []
+for restaurant in restaurants_to_be_list:
+    restaurant_list.append(restaurant.text)
+
+print('음식점 리스트 확인해 보라')
+print(restaurant_list)
+my_xpath = input('원하는 이름 말하라 : ')
+
+# 4번째 자리(3번째 인덱스)에 항상 광고가 들어와 있음 -> 따라서 이 때부터 index를 변경해 줘야 함
+my_index = restaurant_list.index(my_xpath)
+if my_index >= 3:
+    my_index += 1
+print(my_index)
+
+# 해당 음식점 페이지로 이동 : '리뷰' 글씨 클릭해야 함
+WebDriverWait(driver, 10).until(EC.element_to_be_clickable(
+    (By.XPATH, '//*[@id = "info.search.place.list"]/li[' + str(my_index+1) + ']/div[4]/a')))
+time.sleep(2)
+
+review = driver.find_element_by_xpath(
+    '//*[@id = "info.search.place.list"]/li[' + str(my_index+1) + ']/div[4]/a')
 action.double_click(review).perform()
 
 
 driver.switch_to.window(driver.window_handles[-1])
 time.sleep(2)
 
+# ----------
+
 # 총 평균 별점
 soup = BeautifulSoup(driver.page_source, 'html.parser')
 ratings = soup.select('.grade_star')
 
 # 별점 출력
-print(ratings[1].text)
+final_rating = ratings[1].text
+print(final_rating)
 
 # 최고 별점 리뷰 및 최저 별점 리뷰(+날짜) 출력
 # data-page가 끝날 때까지 반복한 후 별점이 가장 낮을 때 그 내용 출력(클 때도 마찬가지)
@@ -135,7 +162,7 @@ end = time.time()
 # 몇 초 걸렸는지 확인
 total_time = int(end-start)
 
-driver.quit()
+# driver.quit()
 
 
 # print('최저 별점을 남긴 고객들의 리뷰 내용입니다: ')

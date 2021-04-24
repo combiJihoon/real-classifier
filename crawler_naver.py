@@ -50,7 +50,8 @@ soup = BeautifulSoup(driver.page_source, 'html.parser')
 ratings = soup.select(
     '._1kUrA')
 
-print(ratings[0].text[2:6])
+final_rating = ratings[0].text[2:6]
+print(final_rating)
 
 
 # 리뷰 페이지로 이동
