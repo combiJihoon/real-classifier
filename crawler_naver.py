@@ -17,16 +17,32 @@ start = time.time()
 
 driver = webdriver.Chrome(r"/Users/jihun/Mywork/RealClassifier/chromedriver")
 baseUrl = 'https://m.map.naver.com/search2/search.naver?query='
-# plusUrl = input('검색해 보아라: ')
-plusUrl = '마북동 마북173'
+plusUrl = input('검색해 보아라: ')
+# plusUrl = '마북동 전주콩나물해장국'
 url = baseUrl + plusUrl
 driver.get(url)
 
 action = ActionChains(driver)
 
+# 원하는 음식점이 맞는지 확인 : 음식점 리스트 출력 및 선택
+# html로 옮기면 사용자가 클릭하도록 바꾸어야 할 듯
+WebDriverWait(driver, 3).until(EC.element_to_be_clickable(
+    (By.CSS_SELECTOR, 'div.item_tit._title > strong')))
+restaurants_to_be_list = driver.find_elements_by_css_selector(
+    'div.item_tit._title > strong')
+restaurant_list = []
+for restaurant in restaurants_to_be_list:
+    restaurant_list.append(restaurant.text)
+
+print('음식점 리스트 확인해 보라')
+print(restaurant_list)
+my_xpath = input('원하는 이름 말하라 : ')
+my_index = restaurant_list.index(my_xpath)
+print(my_index)
+
 # 해당 음식점 페이지로 이동
 WebDriverWait(driver, 10).until(EC.element_to_be_clickable(
-    (By.XPATH, '//*[@id="ct"]/div[2]/ul/li[1]/div[1]/a[2]'))).click()
+    (By.XPATH, '//*[@id="ct"]/div[2]/ul/li[' + str(my_index+1) + ']/div[1]/a/div'))).click()
 time.sleep(2)
 
 
@@ -68,34 +84,61 @@ while True:
         break
 
 
-while True:
-    try:
-        # 더보기 클릭이 다 끝난 후 전체적으로 크롤링
-        li_tags = driver.find_elements_by_css_selector('._2Cv-r')
-        rating_tags = driver.find_elements_by_css_selector(
-            '._2tObC')
-        txt_comment_tags = driver.find_elements_by_css_selector(
-            '.WoYOw')
-        date_tags = driver.find_elements_by_css_selector(
-            'div.ZvQ8X > span:nth-of-type(1)')
+# 더보기 클릭이 다 끝난 후 전체적으로 크롤링
+li_tags = driver.find_elements_by_css_selector('._2Cv-r')
+rating_tags = driver.find_elements_by_css_selector(
+    '._2tObC')
+txt_comment_tags = driver.find_elements_by_css_selector(
+    '.WoYOw')
+date_tags = driver.find_elements_by_css_selector(
+    'div.ZvQ8X > span:nth-of-type(1)')
 
-        total_num = 0
-        review_by_page = []
-        for i in range(len(li_tags)):
-            temp = []
-            rating = rating_tags[i].text
-            txt_comment = txt_comment_tags[i].text
-            date = date_tags[i].text
+total_num = 0
+review_by_page = []
+for i in range(len(li_tags)):
+    temp = []
+    rating = rating_tags[i].text
+    txt_comment = txt_comment_tags[i].text
+    date = date_tags[i].text
 
-            temp.append(rating)
-            temp.append(txt_comment)
-            temp.append(date)
+    temp.append(rating)
+    temp.append(txt_comment)
+    temp.append(date)
 
-            print(temp)
-            total_num += 1
-            review_by_page.append(temp)
-    except NoSuchElementException:
-        break
+    print(temp)
+    total_num += 1
+    review_by_page.append(temp)
+
+
+# while True:
+#     try:
+#         # 더보기 클릭이 다 끝난 후 전체적으로 크롤링
+#         li_tags = driver.find_elements_by_css_selector('._2Cv-r')
+#         rating_tags = driver.find_elements_by_css_selector(
+#             '._2tObC')
+#         txt_comment_tags = driver.find_elements_by_css_selector(
+#             '.WoYOw')
+#         date_tags = driver.find_elements_by_css_selector(
+#             'div.ZvQ8X > span:nth-of-type(1)')
+
+#         total_num = 0
+#         review_by_page = []
+#         for i in range(len(li_tags)):
+#             temp = []
+#             rating = rating_tags[i].text
+#             txt_comment = txt_comment_tags[i].text
+#             date = date_tags[i].text
+
+#             temp.append(rating)
+#             temp.append(txt_comment)
+#             temp.append(date)
+
+#             print(temp)
+#             total_num += 1
+#             review_by_page.append(temp)
+#     except NoSuchElementException:
+#         break
+
 
 end = time.time()
 
