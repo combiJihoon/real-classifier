@@ -106,10 +106,14 @@ while True:
     print('현재 페이지: '+str(pageNum))
     if count >= 100:
         break
-
-    element = driver.find_element_by_xpath(
-        '//*[@id = "mArticle"]/div[5]/div[4]/div/a['+str(i)+']')
-    driver.execute_script("arguments[0].click();", element)
+    try:
+        element = driver.find_element_by_xpath(
+            '//*[@id = "mArticle"]/div[5]/div[4]/div/a['+str(i)+']')
+        driver.execute_script("arguments[0].click();", element)
+    except:
+        element = driver.find_element_by_xpath(
+            '//*[@id = "mArticle"]/div[5]/div[4]/div/a')
+        driver.execute_script("arguments[0].click();", element)
     # 페이지 이동
     if i == 5 and j == 1:
         i = 2

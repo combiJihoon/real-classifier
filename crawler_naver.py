@@ -95,19 +95,20 @@ date_tags = driver.find_elements_by_css_selector(
     'div.ZvQ8X > span:nth-of-type(1)')
 
 count = 0
-review_by_page = []
+review_info = []
 for i in range(len(li_tags)):
-    temp = []
     rating = rating_tags[i].text
+    rating = float(rating)
     txt_comment = txt_comment_tags[i].text
     date = date_tags[i].text
 
-    temp.append(rating)
-    temp.append(txt_comment)
-    temp.append(date)
+    review_info.append((rating, txt_comment, date))
+    # temp.append(rating)
+    # temp.append(txt_comment)
+    # temp.append(date)
 
-    print(temp)
-    review_by_page.append(temp)
+    # print(temp)
+    # review_by_page.append(temp)
     count += 1
     if count >= 100:
         break
@@ -160,5 +161,24 @@ print('걸린시간: ' + str(total_time) + '초')
 # print('총 페이지 수 : ' + str(pageNum))
 print('총 크롤링 리스트 개수 : ' + str(count))
 print('------------------------------')
-# print(review_info)
+print(review_info)
 # print(review_by_page)
+
+review_info.sort(key=lambda x: x[0])
+
+print('최고 별점을 남긴 고객들의 리뷰 내용입니다: ')
+if len(review_info) >= 10:
+    print(review_info[:6])
+elif len(review_info) > 0 and len(review_info) < 10:
+    print(review_info[0])
+elif len(review_info) == 0:
+    print('아직 리뷰가 없어서 확인이 불가능 합니다.')
+
+print('------------------------------')
+print('최저 별점을 남긴 고객들의 리뷰 내용입니다: ')
+if len(review_info) >= 10:
+    print(review_info[-6:])
+elif len(review_info) > 0 and len(review_info) < 10:
+    print(review_info[-1])
+elif len(review_info) == 0:
+    print('아직 리뷰가 없어서 확인이 불가능 합니다.')

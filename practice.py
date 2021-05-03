@@ -1,4 +1,5 @@
 a = [['1점', 'ㅁ', 'ㄴㄴ']]
-b = '1점'
-c = int(b[0])
-print(c, type(c))
+b = '2.5'
+d = '2'
+c = float(b)
+print(float(b), float(d))
