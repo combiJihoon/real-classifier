@@ -94,7 +94,7 @@ txt_comment_tags = driver.find_elements_by_css_selector(
 date_tags = driver.find_elements_by_css_selector(
     'div.ZvQ8X > span:nth-of-type(1)')
 
-total_num = 0
+count = 0
 review_by_page = []
 for i in range(len(li_tags)):
     temp = []
@@ -107,8 +107,10 @@ for i in range(len(li_tags)):
     temp.append(date)
 
     print(temp)
-    total_num += 1
     review_by_page.append(temp)
+    count += 1
+    if count >= 100:
+        break
 
 
 # while True:
@@ -156,7 +158,7 @@ print('------------------------------')
 print('전체 리뷰 크롤링 결과')
 print('걸린시간: ' + str(total_time) + '초')
 # print('총 페이지 수 : ' + str(pageNum))
-print('총 크롤링 리스트 개수 : ' + str(total_num))
+print('총 크롤링 리스트 개수 : ' + str(count))
 print('------------------------------')
 # print(review_info)
 # print(review_by_page)
