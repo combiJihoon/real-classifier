@@ -79,50 +79,52 @@ try:
     review_info = []
 
     while True:
-        # 별점, 리뷰, 날짜 출력
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
-        all_reviews = soup.select(
-            '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li')
-        # print(all_reviews)
-        for review in all_reviews:
-            temp = []
-            rating = review.select_one(
-                '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li > div > div > em').text
-            # rating = int(rating[0])
-            txt_comment = review.select_one(
-                '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li > div.comment_info > p > span').text
-            date = review.select_one(
-                '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li > div.comment_info > div > span.time_write').text
-            temp.append(rating)
-            temp.append(txt_comment)
-            temp.append(date)
-            review_info.append(temp)
-            count += 1
-        # review_by_page.append(review_info)
-
-        print('현재 페이지: '+str(pageNum))
-        if count >= 100:
-            break
         try:
-            element = driver.find_element_by_xpath(
-                '//*[@id = "mArticle"]/div[5]/div[4]/div/a['+str(i)+']')
-            driver.execute_script("arguments[0].click();", element)
-        except:
-            element = driver.find_element_by_xpath(
-                '//*[@id = "mArticle"]/div[5]/div[4]/div/a')
-            driver.execute_script("arguments[0].click();", element)
-        # 페이지 이동
-        if i == 5 and j == 1:
-            i = 2
-            j += 1
-        elif i == 6 and j >= 2:
-            i = 2
-            j += 1
-        else:
-            i += 1
-        pageNum += 1
+            # 별점, 리뷰, 날짜 출력
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            all_reviews = soup.select(
+                '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li')
+            # print(all_reviews)
+            for review in all_reviews:
+                temp = []
+                rating = review.select_one(
+                    '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li > div > div > em').text
+                # rating = int(rating[0])
+                txt_comment = review.select_one(
+                    '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li > div.comment_info > p > span').text
+                date = review.select_one(
+                    '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li > div.comment_info > div > span.time_write').text
+                temp.append(rating)
+                temp.append(txt_comment)
+                temp.append(date)
+                review_info.append(temp)
+                count += 1
+            # review_by_page.append(review_info)
 
-        time.sleep(2)
+            print('현재 페이지: '+str(pageNum))
+            if count >= 100:
+                break
+            try:
+                element = driver.find_element_by_xpath(
+                    '//*[@id = "mArticle"]/div[5]/div[4]/div/a['+str(i)+']')
+                driver.execute_script("arguments[0].click();", element)
+            except:
+                element = driver.find_element_by_xpath(
+                    '//*[@id = "mArticle"]/div[4]/div[4]/div/a')
+                driver.execute_script("arguments[0].click();", element)
+            # 페이지 이동
+            if i == 5 and j == 1:
+                i = 2
+                j += 1
+            elif i == 6 and j >= 2:
+                i = 2
+                j += 1
+            else:
+                i += 1
+            pageNum += 1
+            time.sleep(1)
+        except NoSuchElementException:
+            break
 
         print('------------------------------')
         print('전체 리뷰 크롤링 결과')
