@@ -166,7 +166,7 @@ print(review_info)
 
 review_info.sort(key=lambda x: x[0])
 
-print('최고 별점을 남긴 고객들의 리뷰 내용입니다: ')
+print('최저 별점을 남긴 고객들의 리뷰 내용입니다: ')
 if len(review_info) >= 10:
     print(review_info[:6])
 elif len(review_info) > 0 and len(review_info) < 10:
@@ -175,7 +175,7 @@ elif len(review_info) == 0:
     print('아직 리뷰가 없어서 확인이 불가능 합니다.')
 
 print('------------------------------')
-print('최저 별점을 남긴 고객들의 리뷰 내용입니다: ')
+print('최고 별점을 남긴 고객들의 리뷰 내용입니다: ')
 if len(review_info) >= 10:
     print(review_info[-6:])
 elif len(review_info) > 0 and len(review_info) < 10:
