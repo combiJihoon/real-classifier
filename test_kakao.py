@@ -62,6 +62,10 @@ time.sleep(2)
 
 # ----------
 
+# 총 평균 별점
+soup = BeautifulSoup(driver.page_source, 'html.parser')
+ratings = soup.select('.grade_star')
+
 
 def reviewCrawler():
     # 별점, 리뷰, 날짜 출력
@@ -73,7 +77,10 @@ def reviewCrawler():
         temp = []
         rating = review.select_one(
             '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li > div > div > em').text
-        # rating = int(rating[0])
+        # rating 정보가 없을 경우 임의로 3점 부여
+        if rating == '작성일 : ':
+            rating = '3점'
+        rating = int(rating[0])
         txt_comment = review.select_one(
             '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li > div.comment_info > p > span').text
         date = review.select_one(
@@ -84,97 +91,81 @@ def reviewCrawler():
         review_info.append(temp)
 
 
-# i는 1~ , j는 1~5 단위의 페이지
-i = j = 1
-pageNum = 1
-count = 0
-
-
-def pageMover():
-    global i, j, pageNum
-    # 페이지 이동
-    if i == 5 and j == 1:
-        i = 2
-        j += 1
-    elif i == 6 and j >= 2:
-        i = 2
-        j += 1
-    else:
-        i += 1
-    pageNum += 1
-
-
-def printResult():
-    print('------------------------------')
-    print('전체 리뷰 크롤링 결과')
-    print('총 페이지 수 : ' + str(pageNum))
-    print('크롤링한 리뷰 수 : ' + str(count))
-    print('------------------------------')
-    print(review_info)
-    print('------------------------------')
-    # 최저 평점 리스트
-    high = []
-    # 최고 평점 리스트
-    low = []
-
-    review_info.sort(key=lambda x: x[0])
-    for review in review_info:
-        if review[0] == 1:
-            low.append(review)
-        elif review[0] == 5:
-            high.append(review)
-
-    print('최고 별점을 남긴 고객들의 리뷰 내용입니다: ')
-    print('------------------------------')
-    print(high)
-    print('------------------------------')
-    print('최저 별점을 남긴 고객들의 리뷰 내용입니다: ')
-    print('------------------------------')
-    print(low)
-
-
-# 총 평균 별점
-soup = BeautifulSoup(driver.page_source, 'html.parser')
-ratings = soup.select('.grade_star')
-
 # 별점 출력
 try:
     final_rating = ratings[1].text
     print(final_rating)
 
     # 다음 페이지 클릭
-
+    # i는 1~ , j는 1~5 단위의 페이지
+    i = j = 1
+    pageNum = 1
+    count = 0
     review_info = []
 
     while True:
-        reviewCrawler()
-        count += 1
-        # review_by_page.append(review_info)
-
-        print('현재 페이지: '+str(pageNum))
-        if count >= 100:
-            break
         try:
-            element = driver.find_element_by_xpath(
-                '//*[@id = "mArticle"]/div[5]/div[4]/div/a['+str(i)+']')
-            driver.execute_script("arguments[0].click();", element)
-            pageMover()
-
-        # 페이지가 2까지만 있는 경우 except로 예외처리
-        # 페이지 이동 후 크롤링 하고 끝낸다.
-        except:
-            element = driver.find_element_by_xpath(
-                '//*[@id = "mArticle"]/div[4]/div[4]/div/a')
-            driver.execute_script("arguments[0].click();", element)
             reviewCrawler()
-            printResult()
+            # review_by_page.append(review_info)
+
+            print('현재 페이지: '+str(pageNum))
+            if count >= 100:
+                break
+            try:
+                element = driver.find_element_by_xpath(
+                    '//*[@id = "mArticle"]/div[5]/div[4]/div/a['+str(i)+']')
+                driver.execute_script("arguments[0].click();", element)
+            # 2페이지까지 밖에 없을 경우 예외처리 후 크롤링
+            except:
+                element = driver.find_element_by_xpath(
+                    '//*[@id = "mArticle"]/div[4]/div[4]/div/a')
+                driver.execute_script("arguments[0].click();", element)
+                time.sleep(2)
+                reviewCrawler()
+                count += 1
+                break
+            # break
+            # 페이지 이동
+            if i == 5 and j == 1:
+                i = 2
+                j += 1
+            elif i == 6 and j >= 2:
+                i = 2
+                j += 1
+            else:
+                i += 1
+            pageNum += 1
+            time.sleep(1)
+        except NoSuchElementException:
             break
-        printResult()
-        time.sleep(1)
 
 except IndexError:
     print('아직 리뷰가 없습니다.')
 
+print('------------------------------')
+print('전체 리뷰 크롤링 결과')
+print('총 페이지 수 : ' + str(pageNum))
+print('크롤링한 리뷰 수 : ' + str(count))
+print('------------------------------')
+print(review_info)
+print('------------------------------')
+
+print('최저 별점을 남긴 고객들의 리뷰 내용입니다: ')
+if len(review_info) >= 10:
+    print(review_info[:6])
+elif 0 < len(review_info) < 10:
+    print(review_info[0])
+elif len(review_info) == 0:
+    print('아직 리뷰가 없어서 확인이 불가능 합니다.')
+
+print('------------------------------')
+print('최고 별점을 남긴 고객들의 리뷰 내용입니다: ')
+if len(review_info) >= 10:
+    print(review_info[-6:])
+elif 0 < len(review_info) < 10:
+    print(review_info[-1])
+elif len(review_info) == 0:
+    print('아직 리뷰가 없어서 확인이 불가능 합니다.')
 
 end = time.time()
 
