@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from selenium import webdriver
+from selenium.webdriver import ChromeOptions
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
@@ -14,7 +15,15 @@ from selenium.common.exceptions import NoSuchElementException
 
 start = time.time()
 
-driver = webdriver.Chrome(r"/Users/jihun/Mywork/RealClassifier/chromedriver")
+options = ChromeOptions()
+options.add_argument('headless')
+options.add_argument("disable-gpu")
+
+driver = webdriver.Chrome(
+    r"/Users/jihun/Mywork/RealClassifier/chromedriver", options=options)
+
+# driver = webdriver.Chrome(
+#     r"/Users/jihun/Mywork/RealClassifier/chromedriver")
 url = 'https://map.kakao.com/'
 driver.get(url)
 
@@ -174,3 +183,5 @@ total_time = int(end-start)
 print('걸린시간: ' + str(total_time) + '초')
 
 # driver.quit()
+
+driver.close()
