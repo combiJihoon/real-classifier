@@ -5,6 +5,7 @@ from urllib.parse import quote_plus
 from bs4 import BeautifulSoup
 
 from selenium import webdriver
+from selenium.webdriver import ChromeOptions
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
@@ -15,7 +16,14 @@ from selenium.common.exceptions import NoSuchElementException
 
 start = time.time()
 
-driver = webdriver.Chrome(r"/Users/jihun/Mywork/RealClassifier/chromedriver")
+options = ChromeOptions()
+options.add_argument('headless')
+options.add_argument("disable-gpu")
+
+driver = webdriver.Chrome(
+    r"/Users/jihun/Mywork/RealClassifier/chromedriver", options=options)
+
+# driver = webdriver.Chrome(r"/Users/jihun/Mywork/RealClassifier/chromedriver")
 baseUrl = 'https://m.map.naver.com/search2/search.naver?query='
 plusUrl = input('검색해 보아라: ')
 # plusUrl = '마북동 전주콩나물해장국'
@@ -167,18 +175,28 @@ print(review_info)
 review_info.sort(key=lambda x: x[0])
 
 print('최저 별점을 남긴 고객들의 리뷰 내용입니다: ')
-if len(review_info) >= 10:
+if len(review_info) > 10:
     print(review_info[:6])
-elif len(review_info) > 0 and len(review_info) < 10:
+elif 0 < len(review_info) <= 10:
     print(review_info[0])
 elif len(review_info) == 0:
     print('아직 리뷰가 없어서 확인이 불가능 합니다.')
 
 print('------------------------------')
 print('최고 별점을 남긴 고객들의 리뷰 내용입니다: ')
-if len(review_info) >= 10:
+if len(review_info) > 10:
     print(review_info[-6:])
-elif len(review_info) > 0 and len(review_info) < 10:
+elif 0 < len(review_info) <= 10:
     print(review_info[-1])
 elif len(review_info) == 0:
     print('아직 리뷰가 없어서 확인이 불가능 합니다.')
+
+end = time.time()
+
+# 몇 초 걸렸는지 확인
+total_time = int(end-start)
+print('걸린시간: ' + str(total_time) + '초')
+
+# driver.quit()
+
+driver.close()
