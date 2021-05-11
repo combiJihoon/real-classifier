@@ -75,8 +75,11 @@ time.sleep(2)
 soup = BeautifulSoup(driver.page_source, 'html.parser')
 ratings = soup.select('.grade_star')
 
+count = 0
+
 
 def reviewCrawler():
+    global count
     # 별점, 리뷰, 날짜 출력
     soup = BeautifulSoup(driver.page_source, 'html.parser')
     all_reviews = soup.select(
@@ -98,6 +101,7 @@ def reviewCrawler():
         temp.append(txt_comment)
         temp.append(date)
         review_info.append(temp)
+        count += 1
 
 
 # 별점 출력
@@ -131,7 +135,6 @@ try:
                 driver.execute_script("arguments[0].click();", element)
                 time.sleep(2)
                 reviewCrawler()
-                count += 1
                 break
             # break
             # 페이지 이동
@@ -154,24 +157,25 @@ except IndexError:
 print('------------------------------')
 print('전체 리뷰 크롤링 결과')
 print('총 페이지 수 : ' + str(pageNum))
-print('크롤링한 리뷰 수 : ' + str(count))
+print('크롤링한 리뷰 수 : ' + str(len(review_info)))
 print('------------------------------')
 print(review_info)
 print('------------------------------')
 
+review_info.sort()
 print('최저 별점을 남긴 고객들의 리뷰 내용입니다: ')
-if len(review_info) >= 10:
+if len(review_info) > 10:
     print(review_info[:6])
-elif 0 < len(review_info) < 10:
+elif 0 < len(review_info) <= 10:
     print(review_info[0])
 elif len(review_info) == 0:
     print('아직 리뷰가 없어서 확인이 불가능 합니다.')
 
 print('------------------------------')
 print('최고 별점을 남긴 고객들의 리뷰 내용입니다: ')
-if len(review_info) >= 10:
+if len(review_info) > 10:
     print(review_info[-6:])
-elif 0 < len(review_info) < 10:
+elif 0 < len(review_info) <= 10:
     print(review_info[-1])
 elif len(review_info) == 0:
     print('아직 리뷰가 없어서 확인이 불가능 합니다.')
