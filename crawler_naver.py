@@ -111,47 +111,9 @@ for i in range(len(li_tags)):
     date = date_tags[i].text
 
     review_info.append((rating, txt_comment, date))
-    # temp.append(rating)
-    # temp.append(txt_comment)
-    # temp.append(date)
-
-    # print(temp)
-    # review_by_page.append(temp)
     count += 1
     if count >= 100:
         break
-
-
-# while True:
-#     try:
-#         # 더보기 클릭이 다 끝난 후 전체적으로 크롤링
-#         li_tags = driver.find_elements_by_css_selector('._2Cv-r')
-#         rating_tags = driver.find_elements_by_css_selector(
-#             '._2tObC')
-#         txt_comment_tags = driver.find_elements_by_css_selector(
-#             '.WoYOw')
-#         date_tags = driver.find_elements_by_css_selector(
-#             'div.ZvQ8X > span:nth-of-type(1)')
-
-#         total_num = 0
-#         review_by_page = []
-#         for i in range(len(li_tags)):
-#             temp = []
-#             rating = rating_tags[i].text
-#             txt_comment = txt_comment_tags[i].text
-#             date = date_tags[i].text
-
-#             temp.append(rating)
-#             temp.append(txt_comment)
-#             temp.append(date)
-
-#             print(temp)
-#             total_num += 1
-#             review_by_page.append(temp)
-#     except NoSuchElementException:
-#         break
-
-
 end = time.time()
 
 # 몇 초 걸렸는지 확인

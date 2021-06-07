@@ -78,7 +78,7 @@ ratings = soup.select('.grade_star')
 count = 0
 
 
-def reviewCrawler():
+def reviewCrawler_kakao():
     global count
     # 별점, 리뷰, 날짜 출력
     soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -118,7 +118,7 @@ try:
 
     while True:
         try:
-            reviewCrawler()
+            reviewCrawler_kakao()
             # review_by_page.append(review_info)
 
             print('현재 페이지: '+str(pageNum))
@@ -134,7 +134,7 @@ try:
                     '//*[@id = "mArticle"]/div[4]/div[4]/div/a')
                 driver.execute_script("arguments[0].click();", element)
                 time.sleep(2)
-                reviewCrawler()
+                reviewCrawler_kakao()
                 break
             # break
             # 페이지 이동
