@@ -37,6 +37,7 @@ class Crawler:
         self.driver_naver = webdriver.Chrome(
             r"/Users/jihun/Mywork/django-project/revclassifier/chromedriver")
 
+        self.test = []
         self.q = multiprocessing.Queue()
         self.result_dict = dict()
 
@@ -75,8 +76,14 @@ class Crawler:
         action = ActionChains(self.driver_kakao)
         my_xpath = restaurant_check
 
+        if self.restaurant_list_kakao.count(restaurant_check) >= 2:
+            for i in range(len(self.restaurant_list_kakao)):
+                if self.restaurant_list_kakao[i] == restaurant_check:
+                    my_index = i
+                    break
+        else:
+            my_index = self.restaurant_list_kakao.index(my_xpath)
         # 4번째 자리(3번째 인덱스)에 항상 광고가 들어와 있음 -> 따라서 이 때부터 index를 변경해 줘야 함
-        my_index = self.restaurant_list_kakao.index(my_xpath)
         if my_index >= 3:
             my_index += 1
 
@@ -172,7 +179,12 @@ class Crawler:
         self.result_dict["low_review_info_kakao"] = low_review_info
         self.result_dict["high_review_info_kakao"] = high_review_info
 
-        self.q.put(self.result_dict)
+        '''테스트용'''
+        self.result_dict["review_info_kakao"] = review_info
+        self.test.append(self.result_dict)
+
+        '''배포용'''
+        # self.q.put(self.result_dict)
 
     def naver_checker(self, queryInput):
         # plusUrl = '마북동 전주콩나물해장국'
@@ -191,7 +203,15 @@ class Crawler:
 
     def naver_crawler(self, restaurant_check):
         my_xpath = restaurant_check
-        my_index = self.restaurant_list_naver.index(my_xpath)
+
+        if self.restaurant_list_naver.count(restaurant_check) >= 2:
+            for i in range(len(self.restaurant_list_naver)):
+                if self.restaurant_list_naver[i] == restaurant_check:
+                    my_index = i
+                    break
+        else:
+            my_index = self.restaurant_list_naver.index(my_xpath)
+
         # 해당 음식점 페이지로 이동
         WebDriverWait(self.driver_naver, 10).until(EC.element_to_be_clickable(
             (By.XPATH, '//*[@id="ct"]/div[2]/ul/li[' + str(my_index+1) + ']/div[1]/a/div'))).click()
@@ -313,50 +333,55 @@ class Crawler:
 크롤러 클래스 작동 확인
 음식점 확인 리스트 생성
 '''
-# crawler = Crawler()
-# crawler.kakao_checker('공덕동 스타벅스')
-# restaurant_list_kakao = crawler.restaurant_list_kakao
-# print(restaurant_list_kakao)
+crawler = Crawler()
+crawler.kakao_checker('마포 진미식당')
+restaurant_list_kakao = crawler.restaurant_list_kakao
+print(restaurant_list_kakao)
 
-# restaurant_check = input('골라라 : ')
-# crawler.kakao_crawler(restaurant_check)
-# q = crawler.q
-# print(q)
+restaurant_check = input('골라라 : ')
+crawler.kakao_crawler(restaurant_check)
+test = crawler.test
+print(test)
 
-
-jobs = []
-
-
-def main():
-    crawler = Crawler()
-    # restaurant_check 구하기 위한 과정
-    crawler.kakao_checker('영광보쌈')
-    restaurant_list_kakao = crawler.restaurant_list_kakao
-    print(restaurant_list_kakao)
-    restaurant_check = input('골라라 : ')
-    # 네이버 맛집 리스트 구하기
-    crawler.naver_checker('영광보쌈')
-    # print(crawler.restaurant_list_naver)
-
-    kakao_crawler = crawler.kakao_crawler(restaurant_check)
-    naver_crawler = crawler.naver_crawler(restaurant_check)
-
-    q = crawler.q
-
-    crawlers = [kakao_crawler, naver_crawler]
-
-    for crawler in crawlers:
-        p = Process(target=crawler)
-        jobs.append(p)
-        p.start()
-
-    for p in jobs:
-        p.join()
-        p.close()
-
-    result = [q.get() for j in jobs]
-    print(result)
+'''
+[실패 로그]
+1. 마포 진미식당
+- 일반 크롤러만 사용시 크롤링을 하다 맘
+- multiprocessing을 하면 아예 결과가 나오지 않음
+'''
+# jobs = []
 
 
-if __name__ == '__main__':
-    main()
+# def main():
+#     crawler = Crawler()
+#     # restaurant_check 구하기 위한 과정
+#     crawler.kakao_checker('마포 진미식당')
+#     restaurant_list_kakao = crawler.restaurant_list_kakao
+#     print(restaurant_list_kakao)
+#     restaurant_check = input('골라라 : ')
+#     # 네이버 맛집 리스트 구하기
+#     crawler.naver_checker('마포 진미식당')
+#     # print(crawler.restaurant_list_naver)
+
+#     kakao_crawler = crawler.kakao_crawler(restaurant_check)
+#     naver_crawler = crawler.naver_crawler(restaurant_check)
+
+#     q = crawler.q
+
+#     crawlers = [kakao_crawler, naver_crawler]
+
+#     for crawler in crawlers:
+#         p = Process(target=crawler)
+#         jobs.append(p)
+#         p.start()
+
+#     for p in jobs:
+#         p.join()
+#         p.close()
+
+#     result = [q.get() for j in jobs]
+#     print(result)
+
+
+# if __name__ == '__main__':
+#     main()
