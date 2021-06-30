@@ -359,9 +359,13 @@ class Crawler:
         return self.test
 
 
+start = time.time()
 cr = Crawler()
 '''카카오 테스트'''
-print(cr.print_kakao())
+# print(cr.print_kakao())
 
 '''네이버 테스트'''
 print(cr.print_kakao())
+end = time.time()
+
+print(f'총 시간 : {int(end-start)}')
