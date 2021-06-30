@@ -346,21 +346,22 @@ class Crawler:
         self.kakao_checker(my_query)
         print(self.restaurant_list_kakao)
         temp = input('원하는 음식점 고르시오 : ')
-        self.kakao_checker(my_query)
         self.kakao_crawler(temp)
         return self.test
 
     def print_naver(self):
         my_query = input('원하는 음식점(지역 + 이름) : ')
         self.kakao_checker(my_query)
+        self.naver_checker(my_query)
         print(self.restaurant_list_kakao)
         temp = input('원하는 음식점 고르시오 : ')
-
-        self.kakao_checker(my_query)
-        self.naver_checker(my_query)
         self.naver_crawler(temp)
         return self.test
 
 
 cr = Crawler()
+'''카카오 테스트'''
+print(cr.print_kakao())
+
+'''네이버 테스트'''
 print(cr.print_kakao())
