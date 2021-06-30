@@ -210,6 +210,10 @@ class Crawler:
     def naver_crawler(self, restaurant_check):
         my_xpath = restaurant_check
 
+        # TODO NoSuchElementException 구체적으로 어떻게 처리할 지 생각하기
+        if not self.restaurant_list_kakao:
+            raise NoSuchElementException
+
         if self.restaurant_list_naver.count(restaurant_check) >= 2:
             for i in range(len(self.restaurant_list_naver)):
                 if self.restaurant_list_naver[i] == restaurant_check:
@@ -230,7 +234,7 @@ class Crawler:
                 '._1kUrA')
             final_rating = ratings[0].text[2:6]
         except:
-            return 0
+            final_rating = 0
 
         # '스타벅스' 같은 경우 메뉴 바에 '선물하기'가 있어 '리뷰' 메뉴의 위치가 달라지게 된다.
         # 따라서, 아래와 같이 try & except로 예외처리를 한다.

@@ -105,9 +105,9 @@ class Crawler:
         # 총 평점 출력
         try:
             ratings = soup.select('.grade_star')
-            final_rating = ratings[1].text
+            final_rating = int(ratings[1].text.strip())
         except:
-            return ''
+            return None
 
         count = 0
 
@@ -180,11 +180,11 @@ class Crawler:
         self.result_dict["high_review_info_kakao"] = high_review_info
 
         '''테스트용'''
-        self.result_dict["review_info_kakao"] = review_info
-        self.test.append(self.result_dict)
+        # self.result_dict["review_info_kakao"] = review_info
+        # self.test.append(self.result_dict)
 
         '''배포용'''
-        # self.q.put(self.result_dict)
+        self.q.put(self.result_dict)
 
     def naver_checker(self, queryInput):
         # plusUrl = '마북동 전주콩나물해장국'
@@ -222,9 +222,9 @@ class Crawler:
         try:
             ratings = soup.select(
                 '._1kUrA')
-            final_rating = ratings[0].text[2:6]
+            final_rating = int(ratings[0].text[2:6])
         except:
-            return ''
+            return None
 
         # '스타벅스' 같은 경우 메뉴 바에 '선물하기'가 있어 '리뷰' 메뉴의 위치가 달라지게 된다.
         # 따라서, 아래와 같이 try & except로 예외처리를 한다.
@@ -333,15 +333,15 @@ class Crawler:
 크롤러 클래스 작동 확인
 음식점 확인 리스트 생성
 '''
-crawler = Crawler()
-crawler.kakao_checker('마포 진미식당')
-restaurant_list_kakao = crawler.restaurant_list_kakao
-print(restaurant_list_kakao)
+# crawler = Crawler()
+# crawler.kakao_checker('마포 진미식당')
+# restaurant_list_kakao = crawler.restaurant_list_kakao
+# print(restaurant_list_kakao)
 
-restaurant_check = input('골라라 : ')
-crawler.kakao_crawler(restaurant_check)
-test = crawler.test
-print(test)
+# restaurant_check = input('골라라 : ')
+# crawler.kakao_crawler(restaurant_check)
+# test = crawler.test
+# print(test)
 
 '''
 [실패 로그]
@@ -349,39 +349,39 @@ print(test)
 - 일반 크롤러만 사용시 크롤링을 하다 맘
 - multiprocessing을 하면 아예 결과가 나오지 않음
 '''
-# jobs = []
+jobs = []
 
 
-# def main():
-#     crawler = Crawler()
-#     # restaurant_check 구하기 위한 과정
-#     crawler.kakao_checker('마포 진미식당')
-#     restaurant_list_kakao = crawler.restaurant_list_kakao
-#     print(restaurant_list_kakao)
-#     restaurant_check = input('골라라 : ')
-#     # 네이버 맛집 리스트 구하기
-#     crawler.naver_checker('마포 진미식당')
-#     # print(crawler.restaurant_list_naver)
+def main():
+    crawler = Crawler()
+    # restaurant_check 구하기 위한 과정
+    crawler.kakao_checker('마포 진미식당')
+    restaurant_list_kakao = crawler.restaurant_list_kakao
+    print(restaurant_list_kakao)
+    restaurant_check = input('골라라 : ')
+    # 네이버 맛집 리스트 구하기
+    crawler.naver_checker('마포 진미식당')
+    # print(crawler.restaurant_list_naver)
 
-#     kakao_crawler = crawler.kakao_crawler(restaurant_check)
-#     naver_crawler = crawler.naver_crawler(restaurant_check)
+    kakao_crawler = crawler.kakao_crawler(restaurant_check)
+    naver_crawler = crawler.naver_crawler(restaurant_check)
 
-#     q = crawler.q
+    q = crawler.q
 
-#     crawlers = [kakao_crawler, naver_crawler]
+    crawlers = [kakao_crawler, naver_crawler]
 
-#     for crawler in crawlers:
-#         p = Process(target=crawler)
-#         jobs.append(p)
-#         p.start()
+    for crawler in crawlers:
+        p = Process(target=crawler)
+        jobs.append(p)
+        p.start()
 
-#     for p in jobs:
-#         p.join()
-#         p.close()
+    for p in jobs:
+        p.join()
+        p.close()
 
-#     result = [q.get() for j in jobs]
-#     print(result)
+    result = [q.get() for j in jobs]
+    print(result)
 
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()
