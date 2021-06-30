@@ -71,7 +71,7 @@ class Crawler:
             'strong.tit_name > a.link_name')
         for restaurant in restaurants_to_be_list:
             self.restaurant_list_kakao.append(restaurant.text)
-        self.driver_kakao.quit()
+        self.driver_kakao
 
     def kakao_crawler(self, restaurant_check):
 
@@ -346,6 +346,7 @@ class Crawler:
         self.kakao_checker(my_query)
         print(self.restaurant_list_kakao)
         temp = input('원하는 음식점 고르시오 : ')
+        self.kakao_checker(my_query)
         self.kakao_crawler(temp)
         return self.test
 
@@ -354,6 +355,12 @@ class Crawler:
         self.kakao_checker(my_query)
         print(self.restaurant_list_kakao)
         temp = input('원하는 음식점 고르시오 : ')
+
+        self.kakao_checker(my_query)
         self.naver_checker(my_query)
         self.naver_crawler(temp)
         return self.test
+
+
+cr = Crawler()
+print(cr.print_kakao())
