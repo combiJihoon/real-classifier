@@ -109,8 +109,8 @@ class Crawler:
         # 총 평균 별점
         soup = BeautifulSoup(self.driver_kakao.page_source, 'html.parser')
 
+        ratings = soup.select('.grade_star')
         try:
-            ratings = soup.select('.grade_star')
             final_rating = float(ratings[1].text)
         except:
             final_rating = 0
@@ -365,7 +365,7 @@ cr = Crawler()
 # print(cr.print_kakao())
 
 '''네이버 테스트'''
-print(cr.print_kakao())
+print(cr.print_naver())
 end = time.time()
 
-print(f'총 시간 : {int(end-start)}')
+print(f'총 시간 : {int(end-start)}초')
