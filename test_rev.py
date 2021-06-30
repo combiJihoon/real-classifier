@@ -39,8 +39,8 @@ class Crawler:
         self.driver_naver = webdriver.Chrome(
             r"/Users/jihun/Mywork/django-project/revclassifier/chromedriver")
 
-        # self.test = []
-        self.q = multiprocessing.Queue()
+        self.test = []
+        # self.q = multiprocessing.Queue()
         self.result_dict = dict()
 
         self.kakao = 'https://map.kakao.com/'
@@ -186,11 +186,11 @@ class Crawler:
         self.result_dict["high_review_info_kakao"] = high_review_info
 
         '''테스트용'''
-        # self.result_dict["review_info_kakao"] = review_info
-        # self.test.append(self.result_dict)
+        self.result_dict["review_info_kakao"] = review_info
+        self.test.append(self.result_dict)
 
         '''배포용'''
-        self.q.put(self.result_dict)
+        # self.q.put(self.result_dict)
 
     def naver_checker(self, queryInput):
         # plusUrl = '마북동 전주콩나물해장국'
@@ -312,7 +312,10 @@ class Crawler:
         result_dict["low_review_info_naver"] = low_review_info
         result_dict["high_review_info_naver"] = high_review_info
 
-        self.q.put(result_dict)
+        '''테스트용'''
+        self.result_dict["review_info_kakao"] = review_info
+        self.test.append(self.result_dict)
+        # self.q.put(result_dict)
 
     def reviewCrawler_kakao(self, count, review_info, soup):
         # 별점, 리뷰, 날짜 출력
@@ -337,3 +340,20 @@ class Crawler:
             temp.append(date)
             review_info.append(temp)
             count += 1
+
+    def print_kakao(self):
+        my_query = input('원하는 음식점(지역 + 이름) : ')
+        self.kakao_checker(my_query)
+        print(self.restaurant_list_kakao)
+        temp = input('원하는 음식점 고르시오 : ')
+        self.kakao_crawler(temp)
+        return self.test
+
+    def print_naver(self):
+        my_query = input('원하는 음식점(지역 + 이름) : ')
+        self.kakao_checker(my_query)
+        print(self.restaurant_list_kakao)
+        temp = input('원하는 음식점 고르시오 : ')
+        self.naver_checker(my_query)
+        self.naver_crawler(temp)
+        return self.test
