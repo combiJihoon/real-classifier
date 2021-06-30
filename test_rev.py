@@ -111,9 +111,9 @@ class Crawler:
 
         try:
             ratings = soup.select('.grade_star')
-            final_rating = ratings[1].text
+            final_rating = float(ratings[1].text)
         except:
-            return 0
+            final_rating = 0
 
         count = 0
 
@@ -232,7 +232,7 @@ class Crawler:
         try:
             ratings = soup.select(
                 '._1kUrA')
-            final_rating = ratings[0].text[2:6]
+            final_rating = float(ratings[0].text[2:6])
         except:
             final_rating = 0
 
