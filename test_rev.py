@@ -108,7 +108,7 @@ class Crawler:
 
         # 총 평균 별점
         soup = BeautifulSoup(self.driver_kakao.page_source, 'html.parser')
-        # 총 평점 출력
+
         try:
             ratings = soup.select('.grade_star')
             final_rating = ratings[1].text
@@ -126,7 +126,7 @@ class Crawler:
 
         while True:
             try:
-                self.reviewCrawler_kakao(count, review_info)
+                self.reviewCrawler_kakao(count, review_info, soup)
                 # review_by_page.append(review_info)
 
                 if count >= 100:
@@ -144,7 +144,7 @@ class Crawler:
                         "arguments[0].click();", element)
                     time.sleep(2)
                     self.reviewCrawler_kakao(
-                        count, review_info)
+                        count, review_info, soup)
                     break
                 # break
                 # 페이지 이동
@@ -310,9 +310,9 @@ class Crawler:
 
         self.q.put(result_dict)
 
-    def reviewCrawler_kakao(self, count, review_info):
+    def reviewCrawler_kakao(self, count, review_info, soup):
         # 별점, 리뷰, 날짜 출력
-        soup = BeautifulSoup(self.driver_kakao.page_source, 'html.parser')
+        # soup = BeautifulSoup(self.driver_kakao.page_source, 'html.parser')
         all_reviews = soup.select(
             '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li')
         # print(all_reviews)
