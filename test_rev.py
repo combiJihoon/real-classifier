@@ -161,33 +161,36 @@ class Crawler:
             except NoSuchElementException:
                 break
 
-        review_info.sort()
+        self.result_dict["final_rating_kakao"] = final_rating
+        self.result_dict["reviews_kakao"] = review_info
+
+        # review_info.sort()
 
         # low
-        if len(review_info) > 10:
-            low_review_info = review_info[:6]
-        elif 0 < len(review_info) <= 10:
-            low_review_info = review_info[0]
-        elif len(review_info) == 0:
-            low_review_info = ''
+        # if len(review_info) > 10:
+        #     low_review_info = review_info[:6]
+        # elif 0 < len(review_info) <= 10:
+        #     low_review_info = review_info[0]
+        # elif len(review_info) == 0:
+        #     low_review_info = ''
 
-        # high
-        if len(review_info) > 10:
-            high_review_info = review_info[-6:]
-        elif 0 < len(review_info) <= 10:
-            high_review_info = review_info[-1]
-        elif len(review_info) == 0:
-            high_review_info = ''
+        # # high
+        # if len(review_info) > 10:
+        #     high_review_info = review_info[-6:]
+        # elif 0 < len(review_info) <= 10:
+        #     high_review_info = review_info[-1]
+        # elif len(review_info) == 0:
+        #     high_review_info = ''
 
-        self.driver_kakao.quit()
+        # self.driver_kakao.quit()
 
-        self.result_dict["final_rating_kakao"] = final_rating
-        self.result_dict["low_review_info_kakao"] = low_review_info
-        self.result_dict["high_review_info_kakao"] = high_review_info
+        # self.result_dict["final_rating_kakao"] = final_rating
+        # self.result_dict["low_review_info_kakao"] = low_review_info
+        # self.result_dict["high_review_info_kakao"] = high_review_info
 
-        '''테스트용'''
-        self.result_dict["review_info_kakao"] = review_info
-        self.test.append(self.result_dict)
+        # '''테스트용'''
+        # self.result_dict["review_info_kakao"] = review_info
+        # self.test.append(self.result_dict)
 
         '''배포용'''
         # self.q.put(self.result_dict)
@@ -282,39 +285,42 @@ class Crawler:
             txt_comment = txt_comment_tags[i].text
             date = date_tags[i].text
 
-            review_info.append((rating, txt_comment, date))
+            review_info.append([rating, txt_comment, date])
             count += 1
             if count >= 100:
                 break
 
-        review_info.sort()
+        self.result_dict["final_rating_naver"] = final_rating
+        self.result_dict["reviews_naver"] = review_info
 
-        # low
-        if len(review_info) > 10:
-            low_review_info = review_info[-6:]
-        elif 0 < len(review_info) <= 10:
-            low_review_info = review_info[-1]
-        elif len(review_info) == 0:
-            low_review_info = ''
+        # review_info.sort()
 
-        # high
-        if len(review_info) > 10:
-            high_review_info = review_info[-6:]
-        elif 0 < len(review_info) <= 10:
-            high_review_info = review_info[-1]
-        elif len(review_info) == 0:
-            high_review_info = ''
+        # # low
+        # if len(review_info) > 10:
+        #     low_review_info = review_info[-6:]
+        # elif 0 < len(review_info) <= 10:
+        #     low_review_info = review_info[-1]
+        # elif len(review_info) == 0:
+        #     low_review_info = ''
+
+        # # high
+        # if len(review_info) > 10:
+        #     high_review_info = review_info[-6:]
+        # elif 0 < len(review_info) <= 10:
+        #     high_review_info = review_info[-1]
+        # elif len(review_info) == 0:
+        #     high_review_info = ''
 
         self.driver_naver.quit()
 
-        result_dict = dict()
-        result_dict["final_rating_naver"] = final_rating
-        result_dict["low_review_info_naver"] = low_review_info
-        result_dict["high_review_info_naver"] = high_review_info
+        # result_dict = dict()
+        # result_dict["final_rating_naver"] = final_rating
+        # result_dict["low_review_info_naver"] = low_review_info
+        # result_dict["high_review_info_naver"] = high_review_info
 
-        '''테스트용'''
-        self.result_dict["review_info_kakao"] = review_info
-        self.test.append(self.result_dict)
+        # '''테스트용'''
+        # self.result_dict["review_info_kakao"] = review_info
+        # self.test.append(self.result_dict)
         # self.q.put(result_dict)
 
     def reviewCrawler_kakao(self, count, review_info, soup):
@@ -347,7 +353,7 @@ class Crawler:
         print(self.restaurant_list_kakao)
         temp = input('원하는 음식점 고르시오 : ')
         self.kakao_crawler(temp)
-        return self.test
+        return self.result_dict["final_rating_kakao"], self.result_dict["reviews_kakao"]
 
     def print_naver(self):
         my_query = input('원하는 음식점(지역 + 이름) : ')
@@ -356,16 +362,16 @@ class Crawler:
         print(self.restaurant_list_kakao)
         temp = input('원하는 음식점 고르시오 : ')
         self.naver_crawler(temp)
-        return self.test
+        return self.result_dict["final_rating_naver"], self.result_dict["reviews_naver"]
 
 
 start = time.time()
 cr = Crawler()
 '''카카오 테스트'''
-# print(cr.print_kakao())
+print(cr.print_kakao())
 
 '''네이버 테스트'''
-print(cr.print_naver())
+# print(cr.print_naver())
 end = time.time()
 
 print(f'총 시간 : {int(end-start)}초')
