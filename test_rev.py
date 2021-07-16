@@ -119,6 +119,7 @@ class Crawler:
         pageNum = 1
         is_firstWindow = True
         is_twoPaged = False
+        numDiv_list = [4, 5, 6]
         count = 0
         review_info = []
 
@@ -161,7 +162,7 @@ class Crawler:
 
                 try:
                     element = self.driver_kakao.find_element_by_xpath(
-                        '//*[@id = "mArticle"]/div[5]/div[4]/div/a['+str(pageNum)+']')
+                        '//*[@id = "mArticle"]/div['+str(lambda numDiv: numDiv for numDiv in numDiv_list if numDiv in numDiv_list)+']/div[4]/div/a['+str(pageNum)+']')
                     self.driver_kakao.execute_script(
                         "arguments[0].click();", element)
                     pageNum += 1
@@ -171,46 +172,14 @@ class Crawler:
                     elif not is_firstWindow and pageNum == 7:
                         pageNum = 2
                     time.sleep(1)
-                # 페이지 두 개일때
+            # 페이지 두 개일때
                 except:
                     element = self.driver_kakao.find_element_by_xpath(
-                        '//*[@id = "mArticle"]/div[4]/div[4]/div/a')
+                        '//*[@id = "mArticle"]/div['+str(lambda numDiv: numDiv for numDiv in numDiv_list if numDiv in numDiv_list)+']/div[4]/div/a')
                     self.driver_kakao.execute_script(
                         "arguments[0].click();", element)
                     is_twoPaged = True
-                # if pageNum % 5 == 0:
-                #     # '다음' 버튼 클릭
-                #     element = self.driver_kakao.find_elements_by_css_selector(
-                #         '# mArticle > div.cont_evaluation > div.evaluation_review > div > a.btn_next')
-                #     self.driver_kakao.execute_script(
-                #         "arguments[0].click();", element)
-                #     pageNum = 0
-                #     time.sleep(2)
 
-                # # 다음 페이지로 넘어가기
-                # else:
-                #     try:
-
-                #     except:
-                #         element = self.driver_kakao.find_element_by_xpath(
-                #             '//*[@id = "mArticle"]/div[5]/div[4]/div/a')
-                #         self.driver_kakao.execute_script(
-                #             "arguments[0].click();", element)
-                #         time.sleep(1)
-
-                # pageNum += 1
-                # time.sleep(1)
-
-            # # 2페이지까지 밖에 없을 경우 예외처리 후 크롤링
-            # except:
-            #     element = self.driver_kakao.find_element_by_xpath(
-            #         '//*[@id = "mArticle"]/div[4]/div[4]/div/a')
-            #     self.driver_kakao.execute_script(
-            #         "arguments[0].click();", element)
-            #     time.sleep(2)
-            #     self.reviewCrawler_kakao(
-            #         count, review_info, soup)
-            #     break
             except NoSuchElementException:
                 break
 
