@@ -59,6 +59,7 @@ class Crawler:
         # kakaomap review 찾기
         driver.find_element_by_css_selector(
             '.query.tf_keyword').send_keys(queryInput)
+        time.sleep(2)
         driver.find_element_by_css_selector(
             '.query.tf_keyword').send_keys(Keys.ENTER)
         time.sleep(2)
@@ -71,7 +72,6 @@ class Crawler:
             'strong.tit_name > a.link_name')
         for restaurant in restaurants_to_be_list:
             self.restaurant_list_kakao.append(restaurant.text)
-        self.driver_kakao
 
     def kakao_crawler(self, restaurant_check):
 
@@ -115,51 +115,106 @@ class Crawler:
         except:
             final_rating = 0
 
-        count = 0
-
         # 다음 페이지 클릭
-        # i는 1~ , j는 1~5 단위의 페이지
-        i = j = 1
         pageNum = 1
+        is_firstWindow = True
+        is_twoPaged = False
         count = 0
         review_info = []
 
         while True:
-            try:
-                self.reviewCrawler_kakao(count, review_info, soup)
-                # review_by_page.append(review_info)
+            # 별점, 리뷰, 날짜 출력
+            soup = BeautifulSoup(self.driver_kakao.page_source, 'html.parser')
 
-                if count >= 100:
+            try:
+                all_reviews = soup.select(
+                    '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li')
+                # print(all_reviews)
+                for review in all_reviews:
+
+                    temp = []
+                    rating = review.select_one(
+                        '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li > div > div > em').text
+                    # rating 정보가 없을 경우 임의로 0점 부여
+                    try:
+                        rating = int(rating[0])
+                    except:
+                        rating = 0
+                    txt_comment = review.select_one(
+                        '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li > div.comment_info > p > span').text
+                    date = review.select_one(
+                        '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li > div.comment_info > div > span.time_write').text
+                    temp.append(rating)
+                    temp.append(txt_comment)
+                    temp.append(date)
+                    review_info.append(temp)
+                    count += 1
+
+                    # 100개까지만 크롤링(최신순)
+                    if count >= 100:
+                        break
+                # 페이지 이동
+                # "data-page"의 속성값으로 이동 페이지 결정
+                # innerText가 원하는 pageNum과 일치하면 해당 태그 클릭!
+                if is_twoPaged:
                     break
+
                 try:
                     element = self.driver_kakao.find_element_by_xpath(
-                        '//*[@id = "mArticle"]/div[5]/div[4]/div/a['+str(i)+']')
+                        '//*[@id = "mArticle"]/div[5]/div[4]/div/a['+str(pageNum)+']')
                     self.driver_kakao.execute_script(
                         "arguments[0].click();", element)
-                # 2페이지까지 밖에 없을 경우 예외처리 후 크롤링
+                    pageNum += 1
+                    if is_firstWindow and pageNum == 6:
+                        is_firstWindow = False
+                        pageNum = 2
+                    elif not is_firstWindow and pageNum == 7:
+                        pageNum = 2
+                    time.sleep(1)
+                # 페이지 두 개일때
                 except:
                     element = self.driver_kakao.find_element_by_xpath(
                         '//*[@id = "mArticle"]/div[4]/div[4]/div/a')
                     self.driver_kakao.execute_script(
                         "arguments[0].click();", element)
-                    time.sleep(2)
-                    self.reviewCrawler_kakao(
-                        count, review_info, soup)
-                    break
-                # break
-                # 페이지 이동
-                if i == 5 and j == 1:
-                    i = 2
-                    j += 1
-                elif i == 6 and j >= 2:
-                    i = 2
-                    j += 1
-                else:
-                    i += 1
-                pageNum += 1
-                time.sleep(1)
+                    is_twoPaged = True
+                # if pageNum % 5 == 0:
+                #     # '다음' 버튼 클릭
+                #     element = self.driver_kakao.find_elements_by_css_selector(
+                #         '# mArticle > div.cont_evaluation > div.evaluation_review > div > a.btn_next')
+                #     self.driver_kakao.execute_script(
+                #         "arguments[0].click();", element)
+                #     pageNum = 0
+                #     time.sleep(2)
+
+                # # 다음 페이지로 넘어가기
+                # else:
+                #     try:
+
+                #     except:
+                #         element = self.driver_kakao.find_element_by_xpath(
+                #             '//*[@id = "mArticle"]/div[5]/div[4]/div/a')
+                #         self.driver_kakao.execute_script(
+                #             "arguments[0].click();", element)
+                #         time.sleep(1)
+
+                # pageNum += 1
+                # time.sleep(1)
+
+            # # 2페이지까지 밖에 없을 경우 예외처리 후 크롤링
+            # except:
+            #     element = self.driver_kakao.find_element_by_xpath(
+            #         '//*[@id = "mArticle"]/div[4]/div[4]/div/a')
+            #     self.driver_kakao.execute_script(
+            #         "arguments[0].click();", element)
+            #     time.sleep(2)
+            #     self.reviewCrawler_kakao(
+            #         count, review_info, soup)
+            #     break
             except NoSuchElementException:
                 break
+
+        self.driver_kakao.quit()
 
         self.result_dict["final_rating_kakao"] = final_rating
         self.result_dict["reviews_kakao"] = review_info
@@ -290,6 +345,8 @@ class Crawler:
             if count >= 100:
                 break
 
+        self.driver_naver.quit()
+
         self.result_dict["final_rating_naver"] = final_rating
         self.result_dict["reviews_naver"] = review_info
 
@@ -335,7 +392,7 @@ class Crawler:
                 '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li > div > div > em').text
             # rating 정보가 없을 경우 임의로 3점 부여
             if rating == '작성일 : ':
-                rating = '3점'
+                rating = 0
             rating = int(rating[0])
             txt_comment = review.select_one(
                 '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li > div.comment_info > p > span').text
@@ -351,6 +408,7 @@ class Crawler:
         my_query = input('원하는 음식점(지역 + 이름) : ')
         self.kakao_checker(my_query)
         print(self.restaurant_list_kakao)
+        time.sleep(2)
         temp = input('원하는 음식점 고르시오 : ')
         self.kakao_crawler(temp)
         return self.result_dict["final_rating_kakao"], self.result_dict["reviews_kakao"]
