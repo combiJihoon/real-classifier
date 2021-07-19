@@ -98,10 +98,10 @@ class Crawler:
         # 총 평균 별점
         soup = BeautifulSoup(self.driver_kakao.page_source, 'html.parser')
 
-        ratings = soup.select('.grade_star')
-        try:
-            final_rating = float(ratings[1].text)
-        except:
+        # ratings='\n3.7점\n\n'
+        ratings = soup.select('.grade_star em.num_rate')
+        final_rating = float(ratings[1].text.split('점')[0])
+        if final_rating == '':
             final_rating = 0
 
         # 다음 페이지 클릭
@@ -109,37 +109,53 @@ class Crawler:
         is_firstWindow = True
         is_twoPaged = False
 
-        # numDiv_list = [4, 5, 6]
-        numDiv = 4
-
-        xpath_for_next_page_twoPaged = '//*[@id = "mArticle"]/div['+str(
-            numDiv)+']/div[4]/div/a'
-
         count = 0
         review_info = []
+        end_point = False
 
         while True:
             # 별점, 리뷰, 날짜 출력
             soup = BeautifulSoup(self.driver_kakao.page_source, 'html.parser')
 
             try:
-                self._crawler_kakao(count, review_info, soup)
+                is_endPoint, count = self._crawler_kakao(
+                    count, review_info, soup, end_point)
 
+                # 100개까지만 크롤링(최신순)
+                if is_endPoint:
+                    break
                 if is_twoPaged:
                     break
+
                 # 페이지 이동
-                # TODO div[numDiv]에서 numDiv가 4,5,6 중 하나여야 함
-                try:
-                    self.check_numDiv_kakao(numDiv, pageNum, is_firstWindow) and self.check_numDiv_kakao(
-                        numDiv+1, pageNum, is_firstWindow) or self.check_numDiv_kakao(numDiv+2, pageNum, is_firstWindow)
+                # TODO numDiv 값만 특정지으면 반복문 돌지 않아도 됨 -> 앞쪽에서 실행하는게 좋을듯!
+                # numDiv_list = [4, 5, 6]
+                numDiv = 4
+                for _ in range(3):
+                    is_element_exist, element = self._is_element_exist(
+                        numDiv, pageNum)
+                    if is_element_exist:
+                        pageNum, is_firstWindow = self.check_numDiv_kakao(
+                            numDiv, pageNum, is_firstWindow, element)
+                        break
+                    else:
+                        numDiv += 1
 
                 # 페이지 두 개일때
-                except:
-                    element = self.driver_kakao.find_element_by_xpath(
-                        xpath_for_next_page_twoPaged)
-                    self.driver_kakao.execute_script(
-                        "arguments[0].click();", element)
-                    is_twoPaged = True
+                if not is_element_exist:
+                    numDiv = 4
+                    for _ in range(3):
+                        is_twoPaged_element_exist, element = self._is_twoPaged_element_exist(
+                            numDiv, pageNum)
+                        if is_twoPaged_element_exist:
+                            is_twoPaged = self.check_numDiv_for_twoPaged_kakao(
+                                numDiv, is_twoPaged, element)
+                            break
+                        else:
+                            numDiv += 1
+
+                    if not is_twoPaged_element_exist:
+                        break
 
             except NoSuchElementException:
                 break
@@ -252,7 +268,7 @@ class Crawler:
 
         self.driver_naver.quit()
 
-    def _crawler_kakao(self, count, review_info, soup):
+    def _crawler_kakao(self, count, review_info, soup, is_endPoint):
         # 별점, 리뷰, 날짜 출력
         # soup = BeautifulSoup(self.driver_kakao.page_source, 'html.parser')
         all_reviews = soup.select(
@@ -277,16 +293,34 @@ class Crawler:
             review_info.append(temp)
             count += 1
 
-            # 100개까지만 크롤링(최신순)
-            if count >= 100:
-                break
+        if count >= 100:
+            is_endPoint = True
 
-    def check_numDiv_kakao(self, numDiv, pageNum, is_firstWindow):
-        xpath_for_next_page = '//*[@id = "mArticle"]/div[' + \
-            str(numDiv)+']/div[4]/div/a['+str(pageNum)+']'
-        self.driver_kakao.find_element_by_xpath(xpath_for_next_page)
-        element = self.driver_kakao.find_element_by_xpath(
-            xpath_for_next_page)
+        return is_endPoint, count
+
+    def _is_element_exist(self, numDiv, pageNum):
+        flag = True
+        try:
+            element = self.driver_kakao.find_element_by_xpath(
+                '//*[@id = "mArticle"]/div[' +
+                str(numDiv)+']/div[4]/div/a['+str(pageNum)+']')
+            return flag, element
+        except:
+            flag = False
+            return flag, ''
+
+    def _is_twoPaged_element_exist(self, numDiv, pageNum):
+        flag = True
+        try:
+            element = self.driver_kakao.find_element_by_xpath(
+                '//*[@id = "mArticle"]/div['+str(
+                    numDiv)+']/div[4]/div/a')
+            return flag, element
+        except:
+            flag = False
+            return flag, ''
+
+    def check_numDiv_kakao(self, numDiv, pageNum, is_firstWindow, element):
         self.driver_kakao.execute_script(
             "arguments[0].click();", element)
         pageNum += 1
@@ -296,13 +330,24 @@ class Crawler:
         elif not is_firstWindow and pageNum == 7:
             pageNum = 2
         time.sleep(1)
+        return pageNum, is_firstWindow
+
+    def check_numDiv_for_twoPaged_kakao(self, numDiv, is_twoPaged, element):
+        self.driver_kakao.execute_script(
+            "arguments[0].click();", element)
+        is_twoPaged = True
+        return is_twoPaged
 
     def print_kakao(self):
         my_query = input('원하는 음식점(지역 + 이름) : ')
+        # my_query = '여수 거북이식당'
+
         self.kakao_checker(my_query)
         print(self.restaurant_list_kakao)
         time.sleep(2)
         temp = input('원하는 음식점 고르시오 : ')
+        # temp = '거북이식당'
+
         self.kakao_crawler(temp)
         return self.result_dict["final_rating_kakao"], self.result_dict["reviews_kakao"]
 
