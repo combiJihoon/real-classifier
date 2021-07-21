@@ -99,6 +99,7 @@ class Crawler:
         soup = BeautifulSoup(self.driver_kakao.page_source, 'html.parser')
 
         # ratings='\n3.7점\n\n'
+        # TODO 데이터가 없으면 IndexError가 생긴다.
         ratings = soup.select('.grade_star em.num_rate')
         final_rating = float(ratings[1].text.split('점')[0])
         if final_rating == '':
