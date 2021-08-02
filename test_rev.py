@@ -20,7 +20,7 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 
 import multiprocessing
-from multiprocessing import freeze_support, Process
+from multiprocessing import freeze_support, Process, Queue
 
 
 # 해야하는 것
@@ -102,6 +102,7 @@ class Crawler:
         # TODO 데이터가 없으면 IndexError가 생긴다.
         ratings = soup.select('.grade_star em.num_rate')
         final_rating = float(ratings[1].text.split('점')[0])
+
         if final_rating == '':
             final_rating = 0
 
@@ -185,7 +186,7 @@ class Crawler:
         my_xpath = restaurant_check
 
         # TODO NoSuchElementException 구체적으로 어떻게 처리할 지 생각하기
-        if not self.restaurant_list_kakao:
+        if not self.restaurant_list_naver:
             raise NoSuchElementException
 
         if self.restaurant_list_naver.count(restaurant_check) >= 2:
@@ -196,10 +197,15 @@ class Crawler:
         else:
             my_index = self.restaurant_list_naver.index(my_xpath)
 
-        # 해당 음식점 페이지로 이동
         WebDriverWait(self.driver_naver, 10).until(EC.element_to_be_clickable(
-            (By.XPATH, '//*[@id="ct"]/div[2]/ul/li[' + str(my_index+1) + ']/div[1]/a/div'))).click()
+            (By.CSS_SELECTOR, '#ct > div.search_listview._content._ctList > ul > li:nth-child(' + str(my_index+1) + ') > div.item_info > a.a_item.a_item_distance._linkSiteview > div > strong'))).click()
         time.sleep(2)
+
+        # 해당 음식점 페이지로 이동
+
+        # WebDriverWait(self.driver_naver, 10).until(EC.element_to_be_clickable(
+        #     (By.XPATH, '//*[@id="ct"]/div[2]/ul/li[' + str(my_index+1) + ']/div[1]/a/div'))).click()
+        # time.sleep(2)
 
         soup = BeautifulSoup(self.driver_naver.page_source, 'html.parser')
         # 총 평점 구하기 : 없을 경우 리뷰도 없으므로 빈 문자열 리턴
@@ -362,13 +368,56 @@ class Crawler:
         return self.result_dict["final_rating_naver"], self.result_dict["reviews_naver"]
 
 
-start = time.time()
+# class MultiProcess:
+#     def __init__(self):
+#         self.jobs = []
+#         self.q = Queue()
+#         self.crawelr = Crawler
+#     # 동시 진행은 두개까지만 하도록 한다.
+
+#     def multiCrawler(self, first, second):
+#         # temp_list 얻기
+#         self.crawelr().kakao_checker("공덕동 스타벅스")
+#         self.crawelr().naver_checker("공덕동 스타벅스")
+#         print(self.crawelr().restaurant_list_kakao)
+#         rs_check = input("원하는 곳 말하라: ")
+
+#         if first == "kakao":
+#             first = self.crawelr().kakao_crawler
+#         if second == "naver":
+#             second = self.crawelr().naver_crawler
+
+#         crawlers = [
+#             first(rs_check), second(rs_check)
+#         ]
+
+#         for crawler in crawlers:
+#             p = Process(target=crawler)
+#             self.jobs.append(p)
+#             p.start()
+
+#         for p in self.jobs:
+#             p.join()
+#             p.close()
+
+#         result = [self.q.get() for j in self.jobs]
+
+#         return result
+
+
+# if __name__ == '__main__':
+#     mp = MultiProcess
+#     result = mp().multiCrawler("kakao", "naver")
+#     print(result)
+
+
+# start = time.time()
 cr = Crawler()
-'''카카오 테스트'''
-print(cr.print_kakao())
+# '''카카오 테스트'''
+# print(cr.print_kakao())
 
-'''네이버 테스트'''
-# print(cr.print_naver())
-end = time.time()
+# '''네이버 테스트'''
+print(cr.print_naver())
+# end = time.time()
 
-print(f'총 시간 : {int(end-start)}초')
+# print(f'총 시간 : {int(end-start)}초')
