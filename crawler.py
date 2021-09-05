@@ -1,6 +1,8 @@
 import time
 import requests
 
+from utils import Utils
+
 from urllib.parse import quote_plus
 from bs4 import BeautifulSoup
 
@@ -11,28 +13,26 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 
-from utils import getDriver, check_tmp_result
-
 
 class KakaoCrawler:
     def __init__(self):
         self.restaurant_list_kakao = []
         self.result_dict = dict()
         self.kakao = 'https://map.kakao.com/'
-        self.driver = getDriver()
+        self.driver = Utils().getDriver()
         self.queryInput = ''
 
-    def test(self):
+    def get_kakao(self):
         self.queryInput = str(input().strip())
-        print(check_tmp_result(self.driver, self.kakao, self.queryInput))
+        print(Utils().check_tmp_result(self.driver, self.kakao, self.queryInput))
         restaurant_check = str(input().strip())
         self.init(restaurant_check)
 
     def init(self, restaurant_check):
-
         action = ActionChains(self.driver)
 
-        tmp_result = check_tmp_result(self.driver, self.kakao, self.queryInput)
+        tmp_result = Utils().check_tmp_result(
+            self.driver, self.kakao, self.queryInput)
         my_index = tmp_result.index(restaurant_check)
         # 4번째 자리(3번째 인덱스)에 항상 광고가 들어와 있음 -> 따라서 이 때부터 index를 변경해 줘야 함
         if my_index >= 3:
@@ -194,6 +194,110 @@ class KakaoCrawler:
         return is_twoPaged
 
 
-c = KakaoCrawler()
-c.test()
-print(c.result_dict)
+class NaverCrawler:
+    def __init__(self):
+        self.restaurant_list_naver = []
+        self.result_dict = dict()
+        self.naver = 'https://m.map.naver.com/search2/search.naver?query='
+        self.driver = Utils().getDriver()
+        self.queryInput = ''
+
+    def get_naver(self):
+        self.queryInput = str(input().strip())
+        self.naver += self.queryInput
+        print(Utils().check_tmp_result(self.driver, self.naver, self.queryInput))
+        restaurant_check = str(input().strip())
+        self.init(restaurant_check)
+
+    def init(self, restaurant_check):
+        tmp_result = Utils().check_tmp_result(self.driver, self.naver, self.queryInput)
+
+        # TODO NoSuchElementException 구체적으로 어떻게 처리할 지 생각하기
+        if not tmp_result:
+            raise NoSuchElementException
+
+        else:
+            my_index = tmp_result.index(restaurant_check)
+
+        # 해당 음식점 페이지로 이동
+        WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(
+            (By.CSS_SELECTOR, '#ct > div.search_listview._content._ctList > ul > li:nth-child(' + str(my_index+1) + ') > div.item_info > a.a_item.a_item_distance._linkSiteview > div > strong'))).click()
+        time.sleep(2)
+
+        # 알아낸 restaurant code 이용해 다른 url로 이동
+        # https://m.place.naver.com/restaurant/19862126/home
+        current_url = self.driver.current_url
+        current_url = current_url.replace('home', 'review/visitor')
+        self.driver.get(current_url)
+
+        soup = BeautifulSoup(self.driver.page_source, 'html.parser')
+        # 총 평점 구하기 : 없을 경우 리뷰도 없으므로 빈 문자열 리턴
+        try:
+            ratings = soup.select(
+                '._1kUrA')
+            final_rating = float(ratings[0].text[2:6])
+        except:
+            final_rating = 0
+
+        # TODO 더보기 클릭 횟수 제한하기(더보기 클릭하면 10개씩 나오나...?)10회까지로 제한!
+        # 더보기 계속 클릭하기
+        while True:
+            try:
+                more_page = self.driver.find_element_by_css_selector(
+                    '._3iTUo')
+                self.driver.execute_script(
+                    "arguments[0].click();", more_page)
+                time.sleep(1)
+            except:
+                break
+
+        # 더보기 클릭이 다 끝난 후 전체적으로 크롤링
+        li_tags = self.driver.find_elements_by_css_selector('._2Cv-r')
+        rating_tags = self.driver.find_elements_by_css_selector(
+            '._2tObC')
+        txt_comment_tags = self.driver.find_elements_by_css_selector(
+            '.WoYOw')
+        date_tags = self.driver.find_elements_by_css_selector(
+            'div.ZvQ8X > span:nth-of-type(1)')
+
+        count = 0
+        review_info = []
+        for i in range(len(li_tags)):
+            temp = dict()
+            temp['rating'] = float(rating_tags[i].text)
+            temp['comment'] = txt_comment_tags[i].text
+            temp['date'] = date_tags[i].text
+
+            review_info.append(temp)
+            count += 1
+            if count >= 100:
+                break
+
+        self.driver.quit()
+
+        self.result_dict["final_rating_naver"] = final_rating
+        self.result_dict["reviews_naver"] = review_info
+
+
+class run_app:
+    def __init__(self):
+        self.results = dict()
+
+    def run_kakao(self):
+        k_crawler = KakaoCrawler()
+        k_crawler.get_kakao()
+        result = k_crawler.result_dict
+        self.results['kakao'] = result
+
+    def run_naver(self):
+        n_crawler = NaverCrawler()
+        n_crawler.get_naver()
+        result = n_crawler.result_dict
+        self.results['naver'] = result
+
+
+run = run_app()
+
+if __name__ == '__main__':
+    run.run_naver()
+    print(run.results)
