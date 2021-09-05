@@ -1,5 +1,6 @@
 import time
 import requests
+import json
 
 from utils import Utils
 
@@ -21,19 +22,20 @@ class KakaoCrawler:
         self.kakao = 'https://map.kakao.com/'
         self.driver = Utils().getDriver()
         self.queryInput = ''
+        self.restaurant_check = ''
 
-    def get_kakao(self):
-        self.queryInput = str(input().strip())
+    def get_kakao(self, queryInput):
+        self.queryInput = queryInput
         print(Utils().check_tmp_result(self.driver, self.kakao, self.queryInput))
-        restaurant_check = str(input().strip())
-        self.init(restaurant_check)
+        self.restaurant_check = str(input('원하는 음식점이 어디입니까?: ').strip())
+        self.init()
 
-    def init(self, restaurant_check):
+    def init(self):
         action = ActionChains(self.driver)
 
         tmp_result = Utils().check_tmp_result(
             self.driver, self.kakao, self.queryInput)
-        my_index = tmp_result.index(restaurant_check)
+        my_index = tmp_result.index(self.restaurant_check)
         # 4번째 자리(3번째 인덱스)에 항상 광고가 들어와 있음 -> 따라서 이 때부터 index를 변경해 줘야 함
         if my_index >= 3:
             my_index += 1
@@ -202,11 +204,10 @@ class NaverCrawler:
         self.driver = Utils().getDriver()
         self.queryInput = ''
 
-    def get_naver(self):
-        self.queryInput = str(input().strip())
+    def get_naver(self, queryInput, restaurant_check):
+        self.queryInput = queryInput
         self.naver += self.queryInput
         print(Utils().check_tmp_result(self.driver, self.naver, self.queryInput))
-        restaurant_check = str(input().strip())
         self.init(restaurant_check)
 
     def init(self, restaurant_check):
@@ -282,22 +283,30 @@ class NaverCrawler:
 class run_app:
     def __init__(self):
         self.results = dict()
+        self.restaurant_check = ''
 
-    def run_kakao(self):
+    def run_kakao(self, queryInput):
         k_crawler = KakaoCrawler()
-        k_crawler.get_kakao()
+        k_crawler.get_kakao(queryInput)
         result = k_crawler.result_dict
-        self.results['kakao'] = result
+        self.results[f'{queryInput}-kakao'] = result
+        self.restaurant_check = k_crawler.restaurant_check
 
-    def run_naver(self):
+    def run_naver(self, queryInput):
         n_crawler = NaverCrawler()
-        n_crawler.get_naver()
+        n_crawler.get_naver(queryInput, self.restaurant_check)
         result = n_crawler.result_dict
-        self.results['naver'] = result
+        self.results[f'{queryInput}-naver'] = result
+
+    def save_data(self):
+        with open('data.json', 'w') as json_file:
+            json.dump(self.results, json_file, ensure_ascii=False)
 
 
 run = run_app()
 
 if __name__ == '__main__':
-    run.run_naver()
-    print(run.results)
+    queryInput = str(input('음식점 이름을 입력하세요(지역과 이름) : ').strip())
+    run.run_kakao(queryInput)
+    run.run_naver(queryInput)
+    run.save_data()
