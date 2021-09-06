@@ -179,13 +179,15 @@ class NaverCrawler:
 
         # TODO 더보기 클릭 횟수 제한하기(더보기 클릭하면 10개씩 나오나...?)10회까지로 제한!
         # 더보기 계속 클릭하기
-        while True:
+        click_more = 0
+        while click_more < 11:
             try:
                 more_page = self.driver.find_element_by_css_selector(
                     '._3iTUo')
                 self.driver.execute_script(
                     "arguments[0].click();", more_page)
                 time.sleep(1)
+                click_more += 1
             except:
                 break
 
