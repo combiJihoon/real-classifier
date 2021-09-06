@@ -47,7 +47,7 @@ class KakaoCrawler:
 
         review = self.driver.find_element_by_xpath(
             '//*[@id = "info.search.place.list"]/li[' + str(my_index+1) + ']/div[4]/a')
-        action.double_click(review).perform()
+        action.click(review).perform()
 
         self.driver.switch_to.window(
             self.driver.window_handles[-1])
