@@ -59,62 +59,39 @@ class KakaoCrawler:
         # ratings='\n3.7점\n\n'
         # TODO 데이터가 없으면 IndexError가 생긴다.
         ratings = soup.select('.grade_star em.num_rate')
+
         final_rating = float(ratings[1].text.split('점')[0])
 
         if final_rating == '':
             final_rating = 0
 
-        # 다음 페이지 클릭
-        pageNum = 1
-        is_firstWindow = True
-        is_twoPaged = False
-
         count = 0
+        target_page = -1
         review_info = []
         end_point = False
 
         while True:
             # 별점, 리뷰, 날짜 출력
             soup = BeautifulSoup(self.driver.page_source, 'html.parser')
-
             try:
-                is_endPoint, count = self._init(
-                    count, review_info, soup, end_point)
-
-                # 100개까지만 크롤링(최신순)
-                if is_endPoint:
-                    break
-                if is_twoPaged:
-                    break
+                self._init(count, review_info, soup, end_point)
 
                 # 페이지 이동
-                # TODO numDiv 값만 특정지으면 반복문 돌지 않아도 됨 -> 앞쪽에서 실행하는게 좋을듯!
-                # numDiv_list = [4, 5, 6]
-                numDiv = 4
-                for _ in range(3):
-                    is_element_exist, element = self._is_element_exist(
-                        numDiv, pageNum)
-                    if is_element_exist:
-                        pageNum, is_firstWindow = self.check_numDiv_kakao(
-                            numDiv, pageNum, is_firstWindow, element)
-                        break
+                target_page += 1
+                pages = self.driver.find_elements_by_css_selector(
+                    '.paging_mapdetail .link_page')
+                if target_page != len(pages):
+                    self.driver.execute_script(
+                        "arguments[0].click();", pages[target_page])
+                else:
+                    btn_next = self.driver.find_elements_by_css_selector(
+                        '.paging_mapdetail .btn_next')
+                    if btn_next:
+                        self.driver.execute_script(
+                            "arguments[0].click();", btn_next[0])
+                        target_page = -1
                     else:
-                        numDiv += 1
-
-                # 페이지 두 개일때
-                if not is_element_exist:
-                    numDiv = 4
-                    for _ in range(3):
-                        is_twoPaged_element_exist, element = self._is_twoPaged_element_exist(
-                            numDiv, pageNum)
-                        if is_twoPaged_element_exist:
-                            is_twoPaged = self.check_numDiv_for_twoPaged_kakao(
-                                numDiv, is_twoPaged, element)
-                            break
-                        else:
-                            numDiv += 1
-
-                    if not is_twoPaged_element_exist:
+                        # 마지막 페이지 한 번 더 크롤링 후 끝내기
                         break
 
             except NoSuchElementException:
@@ -127,7 +104,7 @@ class KakaoCrawler:
 
     def _init(self, count, review_info, soup, is_endPoint):
         # 별점, 리뷰, 날짜 출력
-        # soup = BeautifulSoup(self.driver_kakao.page_source, 'html.parser')
+        soup = BeautifulSoup(self.driver.page_source, 'html.parser')
         all_reviews = soup.select(
             '#mArticle > div.cont_evaluation > div.evaluation_review > ul > li')
 
@@ -150,50 +127,10 @@ class KakaoCrawler:
             review_info.append(temp)
             count += 1
 
-        if count >= 100:
-            is_endPoint = True
+        # if count >= 100:
+        #     is_endPoint = True
 
-        return is_endPoint, count
-
-    def _is_element_exist(self, numDiv, pageNum):
-        flag = True
-        try:
-            element = self.driver.find_element_by_xpath(
-                '//*[@id = "mArticle"]/div[' +
-                str(numDiv)+']/div[4]/div/a['+str(pageNum)+']')
-            return flag, element
-        except:
-            flag = False
-            return flag, ''
-
-    def _is_twoPaged_element_exist(self, numDiv, pageNum):
-        flag = True
-        try:
-            element = self.driver.find_element_by_xpath(
-                '//*[@id = "mArticle"]/div['+str(
-                    numDiv)+']/div[4]/div/a')
-            return flag, element
-        except:
-            flag = False
-            return flag, ''
-
-    def check_numDiv_kakao(self, numDiv, pageNum, is_firstWindow, element):
-        self.driver.execute_script(
-            "arguments[0].click();", element)
-        pageNum += 1
-        if is_firstWindow and pageNum == 6:
-            is_firstWindow = False
-            pageNum = 2
-        elif not is_firstWindow and pageNum == 7:
-            pageNum = 2
-        time.sleep(1)
-        return pageNum, is_firstWindow
-
-    def check_numDiv_for_twoPaged_kakao(self, numDiv, is_twoPaged, element):
-        self.driver.execute_script(
-            "arguments[0].click();", element)
-        is_twoPaged = True
-        return is_twoPaged
+        # return is_endPoint, count
 
 
 class NaverCrawler:
@@ -265,8 +202,14 @@ class NaverCrawler:
         review_info = []
         for i in range(len(li_tags)):
             temp = dict()
-            temp['rating'] = float(rating_tags[i].text)
-            temp['comment'] = txt_comment_tags[i].text
+            try:
+                temp['rating'] = float(rating_tags[i].text)
+            except:
+                temp['rating'] = 0
+            try:
+                temp['comment'] = txt_comment_tags[i].text
+            except:
+                temp['comment'] = ''
             temp['date'] = date_tags[i].text
 
             review_info.append(temp)
@@ -303,14 +246,10 @@ class run_app:
             json.dump(self.results, json_file, ensure_ascii=False)
 
 
-# run = run_app()
+run = run_app()
 
-# if __name__ == '__main__':
-#     queryInput = str(input('음식점 이름을 입력하세요(지역과 이름) : ').strip())
-#     run.run_kakao(queryInput)
-#     run.run_naver(queryInput)
-#     run.save_data()
-
-c = KakaoCrawler()
-c.get_kakao("여수 거북이식당")
-print(c.result_dict)
+if __name__ == '__main__':
+    queryInput = str(input('음식점 이름을 입력하세요(지역과 이름) : ').strip())
+    run.run_kakao(queryInput)
+    run.run_naver(queryInput)
+    run.save_data()
