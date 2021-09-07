@@ -179,18 +179,18 @@ class NaverCrawler:
 
         # TODO 더보기 클릭 횟수 제한하기(더보기 클릭하면 10개씩 나오나...?)10회까지로 제한!
         # 더보기 계속 클릭하기
-        click_more = 0
-        while click_more < 11:
+        # click_more = 0
+        # while click_more < 11:
+        while True:
             try:
                 more_page = self.driver.find_element_by_css_selector(
                     '._3iTUo')
                 self.driver.execute_script(
                     "arguments[0].click();", more_page)
                 time.sleep(1)
-                click_more += 1
+                # click_more += 1
             except:
                 break
-
         # 더보기 클릭이 다 끝난 후 전체적으로 크롤링
         li_tags = self.driver.find_elements_by_css_selector('._2Cv-r')
         rating_tags = self.driver.find_elements_by_css_selector(
@@ -215,9 +215,9 @@ class NaverCrawler:
             temp['date'] = date_tags[i].text
 
             review_info.append(temp)
-            count += 1
-            if count >= 100:
-                break
+            # count += 1
+            # if count >= 100:
+            #     break
 
         self.driver.quit()
 
